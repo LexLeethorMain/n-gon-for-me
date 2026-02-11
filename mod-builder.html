@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>n-gon MOD Builder (Blockly)</title>
+        <title>n-gon: gun builder</title>
         <!-- Load Blockly -->
         <script src="./blockly.min.js"></script>
     <style>
@@ -1687,7 +1687,7 @@
             const javascriptGenerator = Blockly.JavaScript;
 
             function getModTechKey(techName) {
-                const gunName = (typeof window.__MOD_BUILDER_GUN_NAME !== 'undefined') ? window.__MOD_BUILDER_GUN_NAME : 'Blockly Gun';
+                const gunName = (typeof window.__MOD_BUILDER_GUN_NAME !== 'undefined') ? window.__MOD_BUILDER_GUN_NAME : 'Custom Gun';
                 function sanitize(s) {
                     if (!s || typeof s !== 'string') return '';
                     return '_mod' + s.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
@@ -2601,8 +2601,8 @@ ${branch}
             drawShape();
 
             function generateMod() {
-                const gunName = document.getElementById('gunName').value || "Blockly Gun";
-                const gunDesc = document.getElementById('gunDescription').value || "Created with blocks.";
+                const gunName = document.getElementById('gunName').value || "Custom Gun";
+                const gunDesc = document.getElementById('gunDescription').value || "Add a description!";
                 const gunAmmo = document.getElementById('gunAmmo').value || "10";
 
                 window.__MOD_BUILDER_GUN_NAME = gunName;
@@ -2765,7 +2765,7 @@ ${stackCode}
         const MOD_NAME = "${gunName}";
         const CUSTOM_SHAPE_PATHS = { ${CUSTOM_SHAPE_PATHS_JS} };
         const DEFAULT_SHAPE_KEY = "${defaultShapeKey.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}";
-        console.log("Loading Blockly MOD: " + MOD_NAME + "...");
+        console.log("Loading gun: " + MOD_NAME + "...");
 
         // 1. Add Weapon
         const applyOnLoadToGun = (gun) => {
