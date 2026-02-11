@@ -1704,11 +1704,7 @@ window.addEventListener("keydown", function (event) {
                 spawn.randomLevelBoss(simulation.mouseInGame.x, simulation.mouseInGame.y);
                 break
             case "9":
-<<<<<<< HEAD
                 powerUps.warp.effect()
-=======
-                powerUps.directSpawn(simulation.mouseInGame.x, simulation.mouseInGame.y, "warp");
->>>>>>> ac0df50 (More fun)
                 break
             case "f":
                 const mode = (m.fieldMode === m.fieldUpgrades.length - 1) ? 0 : m.fieldMode + 1
