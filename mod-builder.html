@@ -1,0 +1,3339 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>n-gon MOD Builder (Blockly)</title>
+        <!-- Load Blockly -->
+        <script src="./blockly.min.js"></script>
+    <style>
+        :root {
+            --bg-0: #aeb6c2;
+            --bg-1: #c7ced8;
+            --panel: #ffffff;
+            --panel-2: #f7f7f7;
+            --border: #333;
+            --text: #111;
+            --muted: #555;
+            --accent: #08c;
+            --accent-2: #333;
+            --accent-3: #444;
+            --shadow: none;
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Helvetica", "Arial", sans-serif;
+            background: var(--bg-0);
+            color: var(--text);
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding: 22px;
+        }
+
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .app-header h1 {
+            margin: 0 0 4px 0;
+            font-size: 24px;
+            letter-spacing: 0.4px;
+        }
+
+        .app-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: minmax(260px, 340px) minmax(420px, 1fr) minmax(260px, 360px);
+            gap: 16px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+
+        .panel-header {
+            padding: 10px 12px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            background: var(--panel-2);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .panel-body {
+            padding: 14px 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .card {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+
+        .pill {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #e5e5e5;
+            border: 1px solid var(--border);
+            color: #111;
+            font-size: 12px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #111;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 6px 8px;
+            background-color: #fff;
+            border: 1px solid #333;
+            color: #111;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #333;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.2);
+        }
+
+        button {
+            background: #fff;
+            color: #333;
+            padding: 6px 10px;
+            border: 1.5px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            transition: transform 0.1s ease, filter 0.2s ease;
+        }
+
+        button.secondary {
+            background: #eee;
+            color: #333;
+        }
+
+        button.ghost {
+            background: #fff;
+            border: 1.5px solid #333;
+            color: #333;
+        }
+
+        button:hover {
+            filter: brightness(1.05);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .blockly-panel {
+            min-height: 620px;
+        }
+
+        .blockly-panel .panel-body {
+            flex: 1;
+        }
+
+        #blocklyDiv {
+            flex: 1;
+            min-height: 520px;
+            width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid #333;
+            background: #f0f0f0;
+        }
+
+        .shape-editor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: #f7f7f7;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+
+        #shapeCanvas {
+            background-color: #fff;
+            border: 2px solid #333;
+            border-radius: 6px;
+            cursor: crosshair;
+            image-rendering: pixelated;
+        }
+
+        .shape-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .shape-btn {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+
+        .export-area {
+            background-color: #f7f7f7;
+            padding: 12px;
+            border-radius: 6px;
+            position: relative;
+            border: 1px solid #333;
+        }
+
+        #exportOutput {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            color: #111;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+        .help {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .help strong {
+            color: #111;
+        }
+
+        .inline-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .divider {
+            height: 1px;
+            background: #333;
+            margin: 8px 0;
+        }
+
+        .blocklyToolboxDiv {
+            background: #fff !important;
+            border-right: 2px solid #333 !important;
+        }
+
+        .blocklyMainBackground {
+            stroke: #ccc !important;
+        }
+
+        .blocklyTreeRow {
+            height: 30px !important;
+            border-radius: 4px !important;
+            margin: 2px 4px !important;
+        }
+
+        .blocklyTreeLabel {
+            font-family: "Helvetica", "Arial", sans-serif !important;
+            font-size: 12px !important;
+        }
+
+        @media (max-width: 1200px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+    </head>
+    <body>
+        <div class="app">
+            <header class="app-header">
+                <div>
+                    <h1>n-gon MOD Builder</h1>
+                    <p>Scratch-ish layout, modern blocks. Build a weapon, define gun tech, then wire up behavior in blocks.</p>
+                </div>
+                <div class="header-actions">
+                    <button onclick="generateMod()">Generate Mod Command</button>
+                    <button class="secondary" type="button" onclick="saveToLocalStorage()">Save</button>
+                    <button class="ghost" type="button" onclick="loadFromLocalStorage()">Load</button>
+                </div>
+            </header>
+
+            <div class="app-grid">
+                <section class="panel settings-panel">
+                    <div class="panel-header">Weapon Settings</div>
+                    <div class="panel-body">
+                        <div class="card">
+                            <label for="gunName">Weapon Name</label>
+                            <input type="text" id="gunName" placeholder="Super Laser">
+
+                            <label for="gunDescription">Description (HTML allowed)</label>
+                            <input type="text" id="gunDescription" placeholder="Shoots a massive beam of light">
+
+                            <label for="gunAmmo">Ammo per Power-up</label>
+                            <input type="number" id="gunAmmo" value="10" step="0.1">
+                        </div>
+
+                        <div class="card">
+                            <div class="inline-row">
+                                <span class="pill">Shape Lab</span>
+                                <span class="help">Name shapes and swap them with gun tech.</span>
+                            </div>
+                            <div class="shape-editor">
+                                <div class="shape-controls" style="margin-bottom: 8px;">
+                                    <label style="color: #111;">Shape</label>
+                                    <select id="shapeSelect" onchange="selectShapeByIndex(parseInt(this.value, 10))"></select>
+                                    <input type="text" id="shapeNameInput" placeholder="Shape name" style="width: 130px; padding: 6px 8px;" onchange="renameCurrentShape(this.value)">
+                                    <button class="shape-btn secondary" type="button" onclick="addShape()">Add shape</button>
+                                    <button class="shape-btn ghost" type="button" id="removeShapeBtn" onclick="removeCurrentShape()">Remove shape</button>
+                                </div>
+                                <canvas id="shapeCanvas" width="280" height="280"></canvas>
+                                <div class="help">Click to add vertices. Drag to move. Shift+Click deletes. Use different shapes in "Fire shape" blocks.</div>
+                                <div class="shape-controls">
+                                    <button class="shape-btn ghost" onclick="clearShape()">Clear</button>
+                                    <button class="shape-btn secondary" onclick="centerShape()">Center</button>
+                                    <button class="shape-btn secondary" onclick="scaleShape(1.1)">Scale Up</button>
+                                    <button class="shape-btn secondary" onclick="scaleShape(0.9)">Scale Down</button>
+                                    <label style="display:inline; color: #111; margin-left: 4px;">
+                                        <input type="checkbox" id="gridSnap" checked> Grid Snap
+                                    </label>
+                                </div>
+                            </div>
+
+                            <label for="customShape" style="margin-top: 12px;">Current shape path (read-only)</label>
+                            <input type="text" id="customShape" placeholder="0 0 40 0 40 40 0 40" value="0 0 40 0 40 40 0 40" readonly>
+                            <div class="help">Use the shape name in blocks like "Fire shape" or "Shape ring".</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel blockly-panel">
+                    <div class="panel-header">Mod Logic</div>
+                    <div class="panel-body">
+                        <div class="card">
+                            <div class="inline-row">
+                                <span class="pill">Gun Tech Tip</span>
+                                <span class="help">Use "Gun Tech" blocks to register tech, then check it with "has gun tech" or "gun tech count".</span>
+                            </div>
+                            <div class="help" style="margin-top: 8px;">
+                                Fire different shapes by combining <strong>Logic â†’ if / else</strong> with <strong>Gun â†’ has gun tech</strong> and <strong>Fire â†’ Fire shape</strong>.
+                            </div>
+                            <div class="help" style="margin-top: 8px;">
+                                <strong>Set blocks are global:</strong> damage, mass, density, gravity, etc. affect all future shots. Put them in <strong>On Load</strong> to set once.
+                            </div>
+                        </div>
+                        <div id="blocklyDiv"></div>
+                    </div>
+                </section>
+
+                <section class="panel output-panel">
+                    <div class="panel-header">Export + Save</div>
+                    <div class="panel-body">
+                        <div class="card">
+                            <div class="inline-row">
+                                <span class="pill">Save / Load</span>
+                                <span class="help">Saves settings, shapes, and blocks to this browser.</span>
+                            </div>
+                            <div class="inline-row" style="margin-top: 10px;">
+                                <button class="secondary" type="button" onclick="saveToLocalStorage()">Save to browser</button>
+                                <button class="ghost" type="button" onclick="loadFromLocalStorage()">Load from browser</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="help">
+                                New blocks live in <strong>Fire</strong>, <strong>Bullet Events</strong>, and <strong>Bullet FX</strong>. Try <strong>Shape ring</strong> + <strong>Trail</strong> + <strong>Homing</strong> for techy chaos.
+                            </div>
+                        </div>
+
+                        <div class="export-area" id="exportContainer" style="display:none;">
+                            <button class="copy-btn secondary" onclick="copyToClipboard()">Copy</button>
+                            <h3 style="margin-top: 0;">Exported Mod Command</h3>
+                            <p class="help">Paste into the n-gon developer console (F12 â†’ Console).</p>
+                            <div id="exportOutput"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Blockly Toolbox XML -->
+        <xml id="toolbox" style="display: none">
+            <category name="Events" colour="#ffd166">
+                <block type="on_fire"></block>
+                <block type="on_load"></block>
+            </category>
+            <category name="Gun Tech" colour="#f8961e">
+                <block type="gun_tech">
+                    <value name="MAX_COUNT">
+                        <shadow type="math_number">
+                            <field name="NUM">1</field>
+                        </shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="Gun (current weapon)" colour="#ef476f">
+                <block type="get_gun_value">
+                    <field name="PROP">ammo</field>
+                </block>
+                <block type="set_gun_value">
+                    <field name="PROP">ammo</field>
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">10</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="gun_value_add">
+                    <field name="PROP">ammo</field>
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">5</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="gun_value_multiply">
+                    <field name="PROP">ammo</field>
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">1.5</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="has_gun_tech">
+                    <field name="TECH_NAME">tech name</field>
+                </block>
+                <block type="gun_tech_count">
+                    <field name="TECH_NAME">tech name</field>
+                </block>
+            </category>
+            <category name="Gun Defaults" colour="#fca5a5">
+                <block type="set_damage">
+                    <value name="DMG">
+                        <shadow type="math_number">
+                            <field name="NUM">0.5</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="damage_add">
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">0.05</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="damage_multiply">
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">1.5</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_min_dmg_speed">
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_pierce_count">
+                    <value name="COUNT">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_mass">
+                    <value name="MASS">
+                        <shadow type="math_number">
+                            <field name="NUM">1</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_density">
+                    <value name="DENSITY">
+                        <shadow type="math_number">
+                            <field name="NUM">0.001</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_gravity">
+                    <value name="GRAVITY">
+                        <shadow type="math_number">
+                            <field name="NUM">0.001</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_bounce">
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">0.4</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_air_drag">
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">0.02</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_scale">
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">1.2</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_lifetime">
+                    <value name="CYCLES">
+                        <shadow type="math_number">
+                            <field name="NUM">120</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="set_bypass_shield"></block>
+                <block type="set_pierce_through_blocks"></block>
+                <block type="set_pierce_prevent_mob_blocks"></block>
+                <block type="set_pierce_keep_trajectory"></block>
+            </category>
+            <category name="Fire" colour="#ff6b6b">
+                <block type="set_cooldown">
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">10</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_nail">
+                    <value name="ANGLE">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_bullet">
+                    <value name="ANGLE">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">50</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_laser">
+                    <value name="ANGLE">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                    <value name="DMG">
+                        <shadow type="math_number">
+                            <field name="NUM">0.1</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_explosion">
+                    <value name="X">
+                        <shadow type="get_player_pos">
+                            <field name="AXIS">x</field>
+                        </shadow>
+                    </value>
+                    <value name="Y">
+                        <shadow type="get_player_pos">
+                            <field name="AXIS">y</field>
+                        </shadow>
+                    </value>
+                    <value name="RADIUS">
+                        <shadow type="math_number">
+                            <field name="NUM">100</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_custom">
+                    <value name="ANGLE">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">30</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_shape">
+                    <value name="ANGLE">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">30</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_fan">
+                    <value name="COUNT">
+                        <shadow type="math_number">
+                            <field name="NUM">5</field>
+                        </shadow>
+                    </value>
+                    <value name="ARC">
+                        <shadow type="math_number">
+                            <field name="NUM">40</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">30</field>
+                        </shadow>
+                    </value>
+                    <value name="OFFSET">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_shape_fan">
+                    <value name="COUNT">
+                        <shadow type="math_number">
+                            <field name="NUM">5</field>
+                        </shadow>
+                    </value>
+                    <value name="ARC">
+                        <shadow type="math_number">
+                            <field name="NUM">50</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">28</field>
+                        </shadow>
+                    </value>
+                    <value name="OFFSET">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_ring">
+                    <value name="COUNT">
+                        <shadow type="math_number">
+                            <field name="NUM">12</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">24</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_shape_ring">
+                    <value name="COUNT">
+                        <shadow type="math_number">
+                            <field name="NUM">10</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">22</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="fire_spray">
+                    <value name="COUNT">
+                        <shadow type="math_number">
+                            <field name="NUM">6</field>
+                        </shadow>
+                    </value>
+                    <value name="SPREAD">
+                        <shadow type="math_number">
+                            <field name="NUM">25</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">26</field>
+                        </shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="Bullet Events" colour="#ffd6a5">
+                <block type="on_hit_enemy"></block>
+                <block type="on_hit_wall"></block>
+                <block type="explode_at_bullet">
+                    <value name="RADIUS">
+                        <shadow type="math_number">
+                            <field name="NUM">90</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="shrapnel_on_destroy">
+                    <value name="COUNT">
+                        <shadow type="math_number">
+                            <field name="NUM">6</field>
+                        </shadow>
+                    </value>
+                    <value name="SPEED">
+                        <shadow type="math_number">
+                            <field name="NUM">6</field>
+                        </shadow>
+                    </value>
+                    <value name="SIZE">
+                        <shadow type="math_number">
+                            <field name="NUM">3</field>
+                        </shadow>
+                    </value>
+                    <value name="LIFE">
+                        <shadow type="math_number">
+                            <field name="NUM">90</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="on_end_explode">
+                    <value name="RADIUS">
+                        <shadow type="math_number">
+                            <field name="NUM">120</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="on_wall_explode">
+                    <value name="RADIUS">
+                        <shadow type="math_number">
+                            <field name="NUM">90</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="destroy_on_collision"></block>
+                <block type="collide_with_player"></block>
+            </category>
+            <category name="Bullet FX" colour="#06d6a0">
+                <block type="projectile_trail">
+                    <value name="SIZE">
+                        <shadow type="math_number">
+                            <field name="NUM">6</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="homing_mouse">
+                    <value name="STRENGTH">
+                        <shadow type="math_number">
+                            <field name="NUM">0.002</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="add_spin">
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">0.3</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="projectile_tilt"></block>
+            </category>
+            <category name="World" colour="#4d96ff">
+                <block type="spawn_block">
+                    <value name="X">
+                        <shadow type="get_mouse_pos">
+                            <field name="AXIS">x</field>
+                        </shadow>
+                    </value>
+                    <value name="Y">
+                        <shadow type="get_mouse_pos">
+                            <field name="AXIS">y</field>
+                        </shadow>
+                    </value>
+                    <value name="W">
+                        <shadow type="math_number">
+                            <field name="NUM">50</field>
+                        </shadow>
+                    </value>
+                    <value name="H">
+                        <shadow type="math_number">
+                            <field name="NUM">50</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="spawn_powerup"></block>
+                <block type="spawn_mob">
+                    <value name="X">
+                        <shadow type="get_mouse_pos">
+                            <field name="AXIS">x</field>
+                        </shadow>
+                    </value>
+                    <value name="Y">
+                        <shadow type="get_mouse_pos">
+                            <field name="AXIS">y</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="spawn_debris">
+                    <value name="X">
+                        <shadow type="get_mouse_pos">
+                            <field name="AXIS">x</field>
+                        </shadow>
+                    </value>
+                    <value name="Y">
+                        <shadow type="get_mouse_pos">
+                            <field name="AXIS">y</field>
+                        </shadow>
+                    </value>
+                    <value name="W">
+                        <shadow type="math_number">
+                            <field name="NUM">200</field>
+                        </shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="Player/Mouse" colour="#8b5cf6">
+                <block type="get_player_pos"></block>
+                <block type="get_mouse_pos"></block>
+                <block type="get_player_stat"></block>
+                <block type="set_player_stat">
+                    <value name="VALUE">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="Effects" colour="#5eead4">
+                <block type="camera_zoom">
+                    <value name="ZOOM">
+                        <shadow type="math_number">
+                            <field name="NUM">1000</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="camera_shake">
+                    <value name="MAG">
+                        <shadow type="math_number">
+                            <field name="NUM">10</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="console_log"></block>
+            </category>
+            <category name="Logic" colour="#a78bfa">
+                <block type="controls_if"></block>
+                <block type="controls_if_else">
+                    <value name="CONDITION">
+                        <shadow type="logic_boolean">
+                            <field name="BOOL">TRUE</field>
+                        </shadow>
+                    </value>
+                </block>
+                <block type="logic_compare"></block>
+                <block type="logic_operation"></block>
+                <block type="logic_negate"></block>
+                <block type="logic_boolean"></block>
+                <block type="chance_percent">
+                    <value name="PCT">
+                        <shadow type="math_number">
+                            <field name="NUM">25</field>
+                        </shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="Loops" colour="#10b981">
+                <block type="controls_repeat_ext">
+                    <value name="TIMES">
+                        <shadow type="math_number">
+                            <field name="NUM">5</field>
+                        </shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="Math" colour="#60a5fa">
+                <block type="math_number"></block>
+                <block type="math_arithmetic"></block>
+                <block type="math_random_float"></block>
+                <block type="random_range">
+                    <value name="MIN">
+                        <shadow type="math_number">
+                            <field name="NUM">0</field>
+                        </shadow>
+                    </value>
+                    <value name="MAX">
+                        <shadow type="math_number">
+                            <field name="NUM">100</field>
+                        </shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="Variables" colour="#f472b6" custom="VARIABLE"></category>
+        </xml>
+
+        <script>
+            // Define custom blocks
+            Blockly.Blocks['on_fire'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("When Weapon Fires");
+                    this.appendStatementInput("STACK").setCheck(null);
+                    this.setColour(60);
+                    this.setTooltip("Logic to run when you click to fire.");
+                }
+            };
+
+            Blockly.Blocks['on_load'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("When Mod Loads");
+                    this.appendStatementInput("STACK").setCheck(null);
+                    this.setColour(60);
+                    this.setTooltip("Logic to run immediately when mod is loaded via console.");
+                }
+            };
+
+            Blockly.Blocks['gun_tech'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("Gun Tech:")
+                        .appendField(new Blockly.FieldTextInput("tech name"), "NAME");
+                    this.appendDummyInput()
+                        .appendField("Description (HTML)")
+                        .appendField(new Blockly.FieldTextInput(""), "DESCRIPTION");
+                    this.appendValueInput("MAX_COUNT").setCheck("Number").appendField("Max count");
+                    this.appendDummyInput()
+                        .appendField("Dependencies (comma list, optional)")
+                        .appendField(new Blockly.FieldTextInput(""), "DEPENDENCIES");
+                    this.appendDummyInput()
+                        .appendField("Incompatible (comma list, optional)")
+                        .appendField(new Blockly.FieldTextInput(""), "INCOMPATIBLE");
+                    this.appendStatementInput("STACK").setCheck(null).appendField("(wrapper)");
+                    this.setColour(230);
+                    this.setTooltip("Define a gun tech for this weapon. The stack runs once when the tech is acquired (use for damage mods, destroy-on-collision, etc).");
+                }
+            };
+
+            const GUN_VALUE_PROP_OPTIONS = [
+                ["ammo", "ammo"],
+                ["ammo per pack", "ammoPack"],
+                ["default ammo per pack", "defaultAmmoPack"]
+            ];
+
+            Blockly.Blocks['get_gun_value'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("gun")
+                        .appendField(new Blockly.FieldDropdown(GUN_VALUE_PROP_OPTIONS), "PROP");
+                    this.setOutput(true, "Number");
+                    this.setColour(192);
+                    this.setTooltip("Current weapon's ammo, ammo per pack, or default ammo per pack. Use inside When Weapon Fires.");
+                }
+            };
+
+            Blockly.Blocks['set_gun_value'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("set gun")
+                        .appendField(new Blockly.FieldDropdown(GUN_VALUE_PROP_OPTIONS), "PROP")
+                        .appendField("to");
+                    this.appendValueInput("VALUE").setCheck("Number");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(192);
+                    this.setTooltip("Set current weapon's ammo or ammo pack value. Use inside When Weapon Fires.");
+                }
+            };
+
+            Blockly.Blocks['gun_value_add'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("add to gun")
+                        .appendField(new Blockly.FieldDropdown(GUN_VALUE_PROP_OPTIONS), "PROP");
+                    this.appendValueInput("VALUE").setCheck("Number");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(192);
+                    this.setTooltip("Add a value to current weapon's ammo or ammo pack. Use inside When Weapon Fires.");
+                }
+            };
+
+            Blockly.Blocks['gun_value_multiply'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("multiply gun")
+                        .appendField(new Blockly.FieldDropdown(GUN_VALUE_PROP_OPTIONS), "PROP")
+                        .appendField("by");
+                    this.appendValueInput("VALUE").setCheck("Number");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(192);
+                    this.setTooltip("Multiply current weapon's ammo or ammo pack. Use inside When Weapon Fires.");
+                }
+            };
+
+            Blockly.Blocks['has_gun_tech'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("has gun tech")
+                        .appendField(new Blockly.FieldTextInput("tech name"), "TECH_NAME");
+                    this.setOutput(true, "Boolean");
+                    this.setColour(192);
+                    this.setTooltip("True if you have this gun tech (from this mod). Use in Logic to e.g. fire a different shape.");
+                }
+            };
+
+            Blockly.Blocks['gun_tech_count'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("gun tech count")
+                        .appendField(new Blockly.FieldTextInput("tech name"), "TECH_NAME");
+                    this.setOutput(true, "Number");
+                    this.setColour(192);
+                    this.setTooltip("Returns the stack count for a gun tech. Non-stackable tech returns 1 or 0.");
+                }
+            };
+
+            Blockly.Blocks['controls_if_else'] = {
+                init: function() {
+                    this.appendValueInput('CONDITION').setCheck('Boolean').appendField('if');
+                    this.appendStatementInput('DO').appendField('do');
+                    this.appendStatementInput('ELSE').appendField('else');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(210);
+                    this.setTooltip('If the condition is true, run the "do" blocks; otherwise run the "else" blocks.');
+                }
+            };
+
+            Blockly.Blocks['fire_nail'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Fire Nail");
+                    this.appendValueInput("ANGLE").setCheck("Number").appendField("at angle offset");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Fires a standard nail projectile.");
+                }
+            };
+
+            Blockly.Blocks['fire_bullet'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Fire Bullet");
+                    this.appendValueInput("ANGLE").setCheck("Number").appendField("angle offset");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Fires a physical bullet with momentum.");
+                }
+            };
+
+            Blockly.Blocks['fire_laser'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Fire Laser");
+                    this.appendValueInput("ANGLE").setCheck("Number").appendField("angle offset");
+                    this.appendValueInput("DMG").setCheck("Number").appendField("damage");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Fires an instantaneous laser beam.");
+                }
+            };
+
+            Blockly.Blocks['fire_explosion'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Spawn Explosion");
+                    this.appendValueInput("X").setCheck("Number").appendField("x");
+                    this.appendValueInput("Y").setCheck("Number").appendField("y");
+                    this.appendValueInput("RADIUS").setCheck("Number").appendField("radius");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Triggers an explosion at the specified coordinates.");
+                }
+            };
+
+            Blockly.Blocks['fire_custom'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Fire")
+                        .appendField(new Blockly.FieldDropdown([
+                            ["Nail", "nail"],
+                            ["Bullet", "bullet"],
+                            ["Laser", "laser"],
+                            ["Explosion", "explosion"],
+                            ["Super Ball", "superBall"],
+                            ["Harpoon", "harpoon"]
+                        ]), "TYPE")
+                        .appendField("at angle offset");
+                    this.appendValueInput("ANGLE").setCheck("Number");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Fires a selected projectile type with custom parameters.");
+                }
+            };
+
+            Blockly.Blocks['fire_shape'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("Fire shape")
+                        .appendField(new Blockly.FieldTextInput("Default"), "SHAPE_KEY")
+                        .appendField("at angle offset");
+                    this.appendValueInput("ANGLE").setCheck("Number");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Fires a projectile using a named shape from the shape editor. Use different shape names for different gun techs.");
+                }
+            };
+
+            Blockly.Blocks['fire_fan'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Fire fan");
+                    this.appendValueInput("COUNT").setCheck("Number").appendField("count");
+                    this.appendValueInput("ARC").setCheck("Number").appendField("arc (deg)");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.appendValueInput("OFFSET").setCheck("Number").appendField("center offset");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(20);
+                    this.setTooltip("Fires a fan of base projectiles across an arc.");
+                }
+            };
+
+            Blockly.Blocks['fire_shape_fan'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("Shape fan")
+                        .appendField(new Blockly.FieldTextInput("Default"), "SHAPE_KEY");
+                    this.appendValueInput("COUNT").setCheck("Number").appendField("count");
+                    this.appendValueInput("ARC").setCheck("Number").appendField("arc (deg)");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.appendValueInput("OFFSET").setCheck("Number").appendField("center offset");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(20);
+                    this.setTooltip("Fires a fan using a named shape.");
+                }
+            };
+
+            Blockly.Blocks['fire_ring'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Fire ring");
+                    this.appendValueInput("COUNT").setCheck("Number").appendField("count");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(20);
+                    this.setTooltip("Fires a full circular ring of base projectiles.");
+                }
+            };
+
+            Blockly.Blocks['fire_shape_ring'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("Shape ring")
+                        .appendField(new Blockly.FieldTextInput("Default"), "SHAPE_KEY");
+                    this.appendValueInput("COUNT").setCheck("Number").appendField("count");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(20);
+                    this.setTooltip("Fires a full circular ring using a named shape.");
+                }
+            };
+
+            Blockly.Blocks['fire_spray'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Fire spray");
+                    this.appendValueInput("COUNT").setCheck("Number").appendField("count");
+                    this.appendValueInput("SPREAD").setCheck("Number").appendField("spread (deg)");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(20);
+                    this.setTooltip("Fires multiple shots with random spread.");
+                }
+            };
+
+            Blockly.Blocks['set_cooldown'] = {
+                init: function() {
+                    this.appendValueInput("VALUE").setCheck("Number").appendField("Set fire cooldown");
+                    this.appendDummyInput().appendField("cycles");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Sets the delay until the next shot. 60 cycles = 1 second.");
+                }
+            };
+
+            Blockly.Blocks['destroy_on_collision'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Destroy projectile on collision with")
+                        .appendField(new Blockly.FieldDropdown([
+                            ["Enemy/Wall", "all"],
+                            ["Enemy only", "enemy"],
+                            ["Wall only", "wall"]
+                        ]), "TYPE");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Automatically removes the projectile when it hits something.");
+                }
+            };
+
+            Blockly.Blocks['collide_with_player'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Projectile collides with Player");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Enables collision between the projectile and the player.");
+                }
+            };
+
+            Blockly.Blocks['set_gravity'] = {
+                init: function() {
+                    this.appendValueInput("GRAVITY").setCheck("Number").appendField("Set projectile gravity");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Sets vertical force for all future projectiles (normal is 0.001).");
+                }
+            };
+
+            Blockly.Blocks['set_damage'] = {
+                init: function() {
+                    this.appendValueInput("DMG").setCheck("Number").appendField("Set base damage");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Sets base damage for all projectiles this gun fires. Scales with player damage bonuses.");
+                }
+            };
+
+            Blockly.Blocks['damage_add'] = {
+                init: function() {
+                    this.appendValueInput("VALUE").setCheck("Number").appendField("Add to base damage");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Adds to the gun's base damage for all future projectiles.");
+                }
+            };
+
+            Blockly.Blocks['damage_multiply'] = {
+                init: function() {
+                    this.appendValueInput("VALUE").setCheck("Number").appendField("Multiply base damage by");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Multiplies the gun's base damage for all future projectiles.");
+                }
+            };
+
+            Blockly.Blocks['set_mass'] = {
+                init: function() {
+                    this.appendValueInput("MASS").setCheck("Number").appendField("Set projectile mass");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Sets mass for all future projectiles. Affects impact force and momentum damage.");
+                }
+            };
+
+            Blockly.Blocks['set_bypass_shield'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Projectile bypasses shields");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("All future projectiles bypass shields.");
+                }
+            };
+
+            Blockly.Blocks['set_pierce_through_blocks'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Pierce through blocks (not walls/enemies)");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Piercing projectiles pass through mob-spawned blocks without losing pierce count.");
+                }
+            };
+
+            Blockly.Blocks['set_pierce_prevent_mob_blocks'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Pierce prevents enemy block spawn on death");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("When piercing shot kills an enemy, prevents blocks from spawning.");
+                }
+            };
+
+            Blockly.Blocks['set_pierce_keep_trajectory'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Pierce keeps trajectory (no bounce)");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Piercing projectiles go straight through everything (except affected by gravity).");
+                }
+            };
+
+            Blockly.Blocks['set_min_dmg_speed'] = {
+                init: function() {
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("Set min damage speed");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Sets minimum speed required for all future projectiles to deal damage.");
+                }
+            };
+
+            Blockly.Blocks['set_pierce_count'] = {
+                init: function() {
+                    this.appendValueInput("COUNT").setCheck("Number").appendField("Set enemy pierce count");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Allows bullets to pass through this many enemies before being destroyed (works with destroy-on-collision).");
+                }
+            };
+
+            Blockly.Blocks['set_density'] = {
+                init: function() {
+                    this.appendValueInput("DENSITY").setCheck("Number").appendField("Set projectile density");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Sets density for all future projectiles.");
+                }
+            };
+
+            Blockly.Blocks['set_lifetime'] = {
+                init: function() {
+                    this.appendValueInput("CYCLES").setCheck("Number").appendField("Set lifetime (cycles)");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Sets lifetime for all future projectiles. 60 cycles = 1 second.");
+                }
+            };
+
+            Blockly.Blocks['set_bounce'] = {
+                init: function() {
+                    this.appendValueInput("VALUE").setCheck("Number").appendField("Set bounciness");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Sets restitution for all future projectiles.");
+                }
+            };
+
+            Blockly.Blocks['set_air_drag'] = {
+                init: function() {
+                    this.appendValueInput("VALUE").setCheck("Number").appendField("Set air drag");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Sets frictionAir for all future projectiles.");
+                }
+            };
+
+            Blockly.Blocks['set_scale'] = {
+                init: function() {
+                    this.appendValueInput("VALUE").setCheck("Number").appendField("Scale projectile");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Uniformly scales all future projectiles.");
+                }
+            };
+
+            Blockly.Blocks['add_spin'] = {
+                init: function() {
+                    this.appendValueInput("VALUE").setCheck("Number").appendField("Add spin");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Applies angular velocity so the projectile spins.");
+                }
+            };
+
+            Blockly.Blocks['projectile_trail'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("Trail color")
+                        .appendField(new Blockly.FieldDropdown([
+                            ["neon cyan", "rgba(80, 255, 240, 0.25)"],
+                            ["electric blue", "rgba(90, 162, 255, 0.25)"],
+                            ["toxic green", "rgba(100, 255, 140, 0.22)"],
+                            ["hot pink", "rgba(255, 90, 180, 0.22)"],
+                            ["ember", "rgba(255, 140, 60, 0.22)"]
+                        ]), "COLOR");
+                    this.appendValueInput("SIZE").setCheck("Number").appendField("size");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Draws a trail dot every frame.");
+                }
+            };
+
+            Blockly.Blocks['homing_mouse'] = {
+                init: function() {
+                    this.appendValueInput("STRENGTH").setCheck("Number").appendField("Homing to mouse");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Gently steers the projectile toward the in-game mouse position.");
+                }
+            };
+
+            Blockly.Blocks['on_end_explode'] = {
+                init: function() {
+                    this.appendValueInput("RADIUS").setCheck("Number").appendField("Explode on end");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Triggers an explosion when the projectile despawns.");
+                }
+            };
+
+            Blockly.Blocks['on_wall_explode'] = {
+                init: function() {
+                    this.appendValueInput("RADIUS").setCheck("Number").appendField("Explode on wall hit");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(120);
+                    this.setTooltip("Triggers an explosion when the projectile hits a wall.");
+                }
+            };
+
+            Blockly.Blocks['on_hit_enemy'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("On hit enemy");
+                    this.appendStatementInput("DO").setCheck(null).appendField("do");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(30);
+                    this.setTooltip("Run blocks when this projectile hits a mob. Place after a fire block.");
+                }
+            };
+
+            Blockly.Blocks['on_hit_wall'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("On hit wall");
+                    this.appendStatementInput("DO").setCheck(null).appendField("do");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(30);
+                    this.setTooltip("Run blocks when this projectile hits a wall. Place after a fire block.");
+                }
+            };
+
+            Blockly.Blocks['explode_at_bullet'] = {
+                init: function() {
+                    this.appendValueInput("RADIUS").setCheck("Number").appendField("Explode at bullet");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(30);
+                    this.setTooltip("Explosion centered on the bullet. Best used inside hit wrappers.");
+                }
+            };
+
+            Blockly.Blocks['shrapnel_on_destroy'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Shrapnel on destroy");
+                    this.appendValueInput("COUNT").setCheck("Number").appendField("count");
+                    this.appendValueInput("SPEED").setCheck("Number").appendField("speed");
+                    this.appendValueInput("SIZE").setCheck("Number").appendField("size");
+                    this.appendValueInput("LIFE").setCheck("Number").appendField("life");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(30);
+                    this.setTooltip("Spawns harmless shrapnel when the projectile is destroyed.");
+                }
+            };
+
+            Blockly.Blocks['spawn_block'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Spawn Block");
+                    this.appendValueInput("X").setCheck("Number").appendField("x");
+                    this.appendValueInput("Y").setCheck("Number").appendField("y");
+                    this.appendValueInput("W").setCheck("Number").appendField("width");
+                    this.appendValueInput("H").setCheck("Number").appendField("height");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(210);
+                }
+            };
+
+            Blockly.Blocks['spawn_powerup'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Spawn Power-up at mouse");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(210);
+                }
+            };
+
+            Blockly.Blocks['spawn_mob'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Spawn Mob")
+                        .appendField(new Blockly.FieldDropdown([
+                            ["Slasher", "slasher"],
+                            ["Hopper", "hopper"],
+                            ["Shooter", "shooter"],
+                            ["Stabber", "stabber"],
+                            ["Laser", "laser"],
+                            ["Giant Sucker", "bigSucker"],
+                            ["Exploder", "exploder"]
+                        ]), "TYPE");
+                    this.appendValueInput("X").setCheck("Number").appendField("x");
+                    this.appendValueInput("Y").setCheck("Number").appendField("y");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(210);
+                }
+            };
+
+            Blockly.Blocks['spawn_debris'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Spawn Debris");
+                    this.appendValueInput("X").setCheck("Number").appendField("x");
+                    this.appendValueInput("Y").setCheck("Number").appendField("y");
+                    this.appendValueInput("W").setCheck("Number").appendField("width");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(210);
+                }
+            };
+
+            Blockly.Blocks['get_player_pos'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Player")
+                        .appendField(new Blockly.FieldDropdown([["x", "x"], ["y", "y"]]), "AXIS");
+                    this.setOutput(true, "Number");
+                    this.setColour(280);
+                }
+            };
+
+            Blockly.Blocks['get_mouse_pos'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Mouse")
+                        .appendField(new Blockly.FieldDropdown([["x", "x"], ["y", "y"]]), "AXIS");
+                    this.setOutput(true, "Number");
+                    this.setColour(280);
+                }
+            };
+
+            Blockly.Blocks['get_player_stat'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Player")
+                        .appendField(new Blockly.FieldDropdown([
+                            ["Health", "health"],
+                            ["Max Health", "maxHealth"],
+                            ["Energy", "energy"],
+                            ["Max Energy", "maxEnergy"],
+                            ["Angle", "angle"],
+                            ["Velocity X", "velocity.x"],
+                            ["Velocity Y", "velocity.y"]
+                        ]), "STAT");
+                    this.setOutput(true, "Number");
+                    this.setColour(280);
+                }
+            };
+
+            Blockly.Blocks['set_player_stat'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Set Player")
+                        .appendField(new Blockly.FieldDropdown([
+                            ["Health", "health"],
+                            ["Energy", "energy"],
+                            ["Velocity X", "velocity.x"],
+                            ["Velocity Y", "velocity.y"]
+                        ]), "STAT");
+                    this.appendValueInput("VALUE").setCheck("Number").appendField("to");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(280);
+                }
+            };
+
+            Blockly.Blocks['camera_zoom'] = {
+                init: function() {
+                    this.appendValueInput("ZOOM").setCheck("Number").appendField("Camera Zoom (e.g. 1000)");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(160);
+                }
+            };
+
+            Blockly.Blocks['camera_shake'] = {
+                init: function() {
+                    this.appendValueInput("MAG").setCheck("Number").appendField("Camera Shake Magnitude");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(160);
+                }
+            };
+
+            Blockly.Blocks['console_log'] = {
+                init: function() {
+                    this.appendValueInput("TEXT").setCheck(null).appendField("In-game console log");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(160);
+                }
+            };
+
+            Blockly.Blocks['projectile_tilt'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("Tilt projectile with velocity");
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                    this.setTooltip("Rotates the projectile to face the direction it is moving.");
+                }
+            };
+
+            Blockly.Blocks['chance_percent'] = {
+                init: function() {
+                    this.appendValueInput("PCT").setCheck("Number").appendField("chance %");
+                    this.setOutput(true, "Boolean");
+                    this.setColour(210);
+                    this.setTooltip("Random chance check. True if Math.random() < pct.");
+                }
+            };
+
+            Blockly.Blocks['random_range'] = {
+                init: function() {
+                    this.appendValueInput("MIN").setCheck("Number").appendField("random range");
+                    this.appendValueInput("MAX").setCheck("Number").appendField("to");
+                    this.setOutput(true, "Number");
+                    this.setColour(230);
+                    this.setTooltip("Random number between min and max.");
+                }
+            };
+
+            // Code generators
+            const javascriptGenerator = Blockly.JavaScript;
+
+            function getModTechKey(techName) {
+                const gunName = (typeof window.__MOD_BUILDER_GUN_NAME !== 'undefined') ? window.__MOD_BUILDER_GUN_NAME : 'Blockly Gun';
+                function sanitize(s) {
+                    if (!s || typeof s !== 'string') return '';
+                    return '_mod' + s.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                }
+                return sanitize(gunName) + sanitize(techName);
+            }
+
+            javascriptGenerator.forBlock['on_fire'] = function(block) {
+                const branch = javascriptGenerator.statementToCode(block, 'STACK');
+                return branch;
+            };
+
+            javascriptGenerator.forBlock['on_load'] = function(block) {
+                const branch = javascriptGenerator.statementToCode(block, 'STACK');
+                return branch;
+            };
+
+            javascriptGenerator.forBlock['gun_tech'] = function(block) {
+                return ''; // gun tech is collected in generateMod, not emitted as code
+            };
+
+            javascriptGenerator.forBlock['get_gun_value'] = function(block) {
+                const prop = block.getFieldValue('PROP') || 'ammo';
+                return ['this.' + prop, javascriptGenerator.ORDER_ATOMIC];
+            };
+
+            javascriptGenerator.forBlock['set_gun_value'] = function(block) {
+                const prop = block.getFieldValue('PROP') || 'ammo';
+                const value = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || '0';
+                return 'this.' + prop + ' = ' + value + ';\n';
+            };
+
+            javascriptGenerator.forBlock['gun_value_add'] = function(block) {
+                const prop = block.getFieldValue('PROP') || 'ammo';
+                const value = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || '0';
+                return 'this.' + prop + ' += ' + value + ';\n';
+            };
+
+            javascriptGenerator.forBlock['gun_value_multiply'] = function(block) {
+                const prop = block.getFieldValue('PROP') || 'ammo';
+                const value = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || '1';
+                return 'this.' + prop + ' *= ' + value + ';\n';
+            };
+
+            javascriptGenerator.forBlock['has_gun_tech'] = function(block) {
+                const techName = (block.getFieldValue('TECH_NAME') || 'tech name').trim();
+                const key = getModTechKey(techName);
+                return ['tech.' + key, javascriptGenerator.ORDER_ATOMIC];
+            };
+
+            javascriptGenerator.forBlock['gun_tech_count'] = function(block) {
+                const techName = (block.getFieldValue('TECH_NAME') || 'tech name').trim();
+                const key = getModTechKey(techName);
+                return ['(tech.' + key + ' || 0)', javascriptGenerator.ORDER_ATOMIC];
+            };
+
+            javascriptGenerator.forBlock['controls_if_else'] = function(block) {
+                const condition = javascriptGenerator.valueToCode(block, 'CONDITION', javascriptGenerator.ORDER_NONE) || 'false';
+                const doBranch = javascriptGenerator.statementToCode(block, 'DO');
+                const elseBranch = javascriptGenerator.statementToCode(block, 'ELSE');
+                return 'if (' + condition + ') {\n' + doBranch + '} else {\n' + elseBranch + '}\n';
+            };
+
+            javascriptGenerator.forBlock['fire_nail'] = function(block) {
+                const angle = javascriptGenerator.valueToCode(block, 'ANGLE', javascriptGenerator.ORDER_ATOMIC) || "0";
+                return `this.baseFire(m.angle + ${angle});\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_bullet'] = function(block) {
+                const angle = javascriptGenerator.valueToCode(block, 'ANGLE', javascriptGenerator.ORDER_ATOMIC) || "0";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "52";
+                return `(() => {
+                    const me = bullet.length;
+                    const dir = m.angle + ${angle};
+                    const s = ${speed};
+                    bullet[me] = Bodies.rectangle(m.pos.x, m.pos.y, 22, 22, b.fireAttributes(dir));
+                    Composite.add(engine.world, bullet[me]);
+                    Matter.Body.setVelocity(bullet[me], {
+                        x: 0.5 * player.velocity.x + s * Math.cos(dir),
+                        y: 0.5 * player.velocity.y + s * Math.sin(dir)
+                    });
+                    bullet[me].endCycle = simulation.cycle + 40;
+                    bullet[me].do = function() {
+                        const scale = 0.96;
+                        Matter.Body.scale(this, scale, scale);
+                    };
+                    this.applyModProps(me);
+                })();\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_laser'] = function(block) {
+                const angle = javascriptGenerator.valueToCode(block, 'ANGLE', javascriptGenerator.ORDER_ATOMIC) || "0";
+                const dmg = javascriptGenerator.valueToCode(block, 'DMG', javascriptGenerator.ORDER_ATOMIC) || "0.1";
+                return `(() => {
+                    const dir = m.angle + ${angle};
+                    simulation.ephemera.push({
+                        count: 10,
+                        where: { x: m.pos.x, y: m.pos.y },
+                        end: { x: m.pos.x + 2000 * Math.cos(dir), y: m.pos.y + 2000 * Math.sin(dir) },
+                        dmg: ${dmg},
+                        angle: dir,
+                        do() {
+                            this.count--;
+                            if (this.count < 0) simulation.removeEphemera(this);
+                            ctx.strokeStyle = "#f00";
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(this.where.x, this.where.y);
+                            ctx.lineTo(this.end.x, this.end.y);
+                            ctx.stroke();
+                        }
+                    });
+                })();\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_explosion'] = function(block) {
+                const x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC) || "m.pos.x";
+                const y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC) || "m.pos.y";
+                const radius = javascriptGenerator.valueToCode(block, 'RADIUS', javascriptGenerator.ORDER_ATOMIC) || "100";
+                return `b.explosion({x: ${x}, y: ${y}}, ${radius});\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_custom'] = function(block) {
+                const type = block.getFieldValue('TYPE');
+                const angle = javascriptGenerator.valueToCode(block, 'ANGLE', javascriptGenerator.ORDER_ATOMIC) || "0";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "30";
+
+                if (type === 'nail') return `this.baseFire(m.angle + ${angle}, ${speed});\n`;
+                if (type === 'bullet') {
+                     return `(() => {
+                        const me = bullet.length;
+                        const dir = m.angle + ${angle};
+                        const s = ${speed};
+                        bullet[me] = Bodies.rectangle(m.pos.x, m.pos.y, 22, 22, b.fireAttributes(dir));
+                        Composite.add(engine.world, bullet[me]);
+                        Matter.Body.setVelocity(bullet[me], { x: 0.5 * player.velocity.x + s * Math.cos(dir), y: 0.5 * player.velocity.y + s * Math.sin(dir) });
+                        bullet[me].endCycle = simulation.cycle + 40;
+                        this.applyModProps(me);
+                    })();\n`;
+                }
+                if (type === 'laser') {
+                    return `(() => {
+                        const dir = m.angle + ${angle};
+                        simulation.ephemera.push({
+                            count: 10,
+                            where: { x: m.pos.x, y: m.pos.y },
+                            end: { x: m.pos.x + 2000 * Math.cos(dir), y: m.pos.y + 2000 * Math.sin(dir) },
+                            dmg: 0.1,
+                            angle: dir,
+                            do() {
+                                this.count--;
+                                if (this.count < 0) simulation.removeEphemera(this);
+                                ctx.strokeStyle = "#0ff";
+                                ctx.lineWidth = 3;
+                                ctx.beginPath();
+                                ctx.moveTo(this.where.x, this.where.y);
+                                ctx.lineTo(this.end.x, this.end.y);
+                                ctx.stroke();
+                            }
+                        });
+                    })();\n`;
+                }
+                if (type === 'explosion') return `b.explosion({x: m.pos.x + 100 * Math.cos(m.angle), y: m.pos.y + 100 * Math.sin(m.angle)}, ${speed} * 3);\n`;
+                if (type === 'superBall') return `(() => {
+                        const before = bullet.length;
+                        b.superBall(m.pos, {x: ${speed} * Math.cos(m.angle + ${angle}), y: ${speed} * Math.sin(m.angle + ${angle})}, 11 * tech.bulletSize);
+                        if (bullet.length > before) this.applyModProps(bullet.length - 1);
+                    })();\n`;
+                if (type === 'harpoon') return `(() => {
+                        const before = bullet.length;
+                        b.harpoon(m.angle + ${angle});
+                        if (bullet.length > before) this.applyModProps(bullet.length - 1);
+                    })();\n`;
+
+                return `this.baseFire(m.angle + ${angle}, ${speed});\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_shape'] = function(block) {
+                const angle = javascriptGenerator.valueToCode(block, 'ANGLE', javascriptGenerator.ORDER_ATOMIC) || "0";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "30";
+                const shapeKey = (block.getFieldValue('SHAPE_KEY') || 'Default').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                return `this.fireCustomShape(m.angle + ${angle}, ${speed}, "${shapeKey}");\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_fan'] = function(block) {
+                const count = javascriptGenerator.valueToCode(block, 'COUNT', javascriptGenerator.ORDER_ATOMIC) || "3";
+                const arc = javascriptGenerator.valueToCode(block, 'ARC', javascriptGenerator.ORDER_ATOMIC) || "30";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "30";
+                const offset = javascriptGenerator.valueToCode(block, 'OFFSET', javascriptGenerator.ORDER_ATOMIC) || "0";
+                return `(() => {
+        const n = Math.max(1, Math.floor(${count}));
+        const arc = (${arc}) * Math.PI / 180;
+        const base = m.angle + (${offset});
+        if (n === 1) {
+            this.baseFire(base, ${speed});
+        } else {
+            const step = arc / (n - 1);
+            for (let i = 0; i < n; i++) {
+                const a = base - arc / 2 + step * i;
+                this.baseFire(a, ${speed});
+            }
+        }
+    })();\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_shape_fan'] = function(block) {
+                const count = javascriptGenerator.valueToCode(block, 'COUNT', javascriptGenerator.ORDER_ATOMIC) || "3";
+                const arc = javascriptGenerator.valueToCode(block, 'ARC', javascriptGenerator.ORDER_ATOMIC) || "30";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "30";
+                const offset = javascriptGenerator.valueToCode(block, 'OFFSET', javascriptGenerator.ORDER_ATOMIC) || "0";
+                const shapeKey = (block.getFieldValue('SHAPE_KEY') || 'Default').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                return `(() => {
+        const n = Math.max(1, Math.floor(${count}));
+        const arc = (${arc}) * Math.PI / 180;
+        const base = m.angle + (${offset});
+        if (n === 1) {
+            this.fireCustomShape(base, ${speed}, "${shapeKey}");
+        } else {
+            const step = arc / (n - 1);
+            for (let i = 0; i < n; i++) {
+                const a = base - arc / 2 + step * i;
+                this.fireCustomShape(a, ${speed}, "${shapeKey}");
+            }
+        }
+    })();\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_ring'] = function(block) {
+                const count = javascriptGenerator.valueToCode(block, 'COUNT', javascriptGenerator.ORDER_ATOMIC) || "8";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "24";
+                return `(() => {
+        const n = Math.max(1, Math.floor(${count}));
+        for (let i = 0; i < n; i++) {
+            const a = m.angle + (i / n) * Math.PI * 2;
+            this.baseFire(a, ${speed});
+        }
+    })();\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_shape_ring'] = function(block) {
+                const count = javascriptGenerator.valueToCode(block, 'COUNT', javascriptGenerator.ORDER_ATOMIC) || "8";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "24";
+                const shapeKey = (block.getFieldValue('SHAPE_KEY') || 'Default').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                return `(() => {
+        const n = Math.max(1, Math.floor(${count}));
+        for (let i = 0; i < n; i++) {
+            const a = m.angle + (i / n) * Math.PI * 2;
+            this.fireCustomShape(a, ${speed}, "${shapeKey}");
+        }
+    })();\n`;
+            };
+
+            javascriptGenerator.forBlock['fire_spray'] = function(block) {
+                const count = javascriptGenerator.valueToCode(block, 'COUNT', javascriptGenerator.ORDER_ATOMIC) || "5";
+                const spread = javascriptGenerator.valueToCode(block, 'SPREAD', javascriptGenerator.ORDER_ATOMIC) || "20";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "28";
+                return `(() => {
+        const n = Math.max(1, Math.floor(${count}));
+        const spread = (${spread}) * Math.PI / 180;
+        for (let i = 0; i < n; i++) {
+            const a = m.angle + (Math.random() - 0.5) * spread;
+            this.baseFire(a, ${speed});
+        }
+    })();\n`;
+            };
+
+            javascriptGenerator.forBlock['set_cooldown'] = function(block) {
+                const val = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || "20";
+                return `m.fireCDcycle = m.cycle + Math.floor(${val} * b.fireCDscale);\n`;
+            };
+
+            javascriptGenerator.forBlock['destroy_on_collision'] = function(block) {
+                const type = block.getFieldValue('TYPE');
+                return `this.modDestroyOnCollision = "${type}";
+if (typeof me !== "undefined" && bullet[me]) {
+    (() => {
+        const body = bullet[me];
+        const destroy = "${type}";
+        body.__modDestroyOnCollision = destroy;
+        if (destroy === "all" || destroy === "enemy") {
+            const oldBefore = body.beforeDmg || function() {};
+            body.beforeDmg = function(who) {
+                oldBefore.call(this, who);
+                const owner = this.parent || this;
+                owner.endCycle = 0;
+            };
+            if (body.parts && body.parts.length > 1) {
+                for (let i = 0; i < body.parts.length; i++) {
+                    body.parts[i].beforeDmg = body.beforeDmg;
+                    body.parts[i].__modDestroyOnCollision = destroy;
+                }
+            }
+        }
+        if (destroy === "all" || destroy === "wall") {
+            const oldWall = body.onWallHit || function() {};
+            body.onWallHit = function() {
+                oldWall.call(this);
+                const owner = this.parent || this;
+                owner.endCycle = 0;
+            };
+            if (body.parts && body.parts.length > 1) {
+                for (let i = 0; i < body.parts.length; i++) {
+                    body.parts[i].onWallHit = body.onWallHit;
+                    body.parts[i].__modDestroyOnCollision = destroy;
+                }
+            }
+        }
+    })();
+}
+`;
+            };
+
+            javascriptGenerator.forBlock['collide_with_player'] = function(block) {
+                return `if (bullet[me]) bullet[me].collisionFilter.mask |= cat.player;\n`;
+            };
+
+            javascriptGenerator.forBlock['set_gravity'] = function(block) {
+                const gravity = javascriptGenerator.valueToCode(block, 'GRAVITY', javascriptGenerator.ORDER_ATOMIC) || "0.001";
+                return `this.modGravity = ${gravity};\n`;
+            };
+
+            javascriptGenerator.forBlock['set_damage'] = function(block) {
+                const dmg = javascriptGenerator.valueToCode(block, 'DMG', javascriptGenerator.ORDER_ATOMIC) || "0.5";
+                return `this.modDamageBase = ${dmg};\n`;
+            };
+
+            javascriptGenerator.forBlock['damage_add'] = function(block) {
+                const val = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || "0";
+                return `this.modDamageBase += ${val};\n`;
+            };
+
+            javascriptGenerator.forBlock['damage_multiply'] = function(block) {
+                const val = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || "1";
+                return `this.modDamageBase *= ${val};\n`;
+            };
+
+            javascriptGenerator.forBlock['set_mass'] = function(block) {
+                const mass = javascriptGenerator.valueToCode(block, 'MASS', javascriptGenerator.ORDER_ATOMIC) || "1";
+                return `this.modMass = ${mass};\n`;
+            };
+
+            javascriptGenerator.forBlock['set_bypass_shield'] = function(block) {
+                return `this.modBypassShield = true;\n`;
+            };
+
+            javascriptGenerator.forBlock['set_pierce_through_blocks'] = function(block) {
+                return `this.modPierceThroughBlocks = true;\n`;
+            };
+
+            javascriptGenerator.forBlock['set_pierce_prevent_mob_blocks'] = function(block) {
+                return `this.modPiercePreventMobBlocks = true;\n`;
+            };
+
+            javascriptGenerator.forBlock['set_pierce_keep_trajectory'] = function(block) {
+                return `this.modPierceKeepTrajectory = true;\n`;
+            };
+
+            javascriptGenerator.forBlock['set_min_dmg_speed'] = function(block) {
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "0";
+                return `this.modMinDmgSpeed = ${speed};\n`;
+            };
+
+            javascriptGenerator.forBlock['set_pierce_count'] = function(block) {
+                const count = javascriptGenerator.valueToCode(block, 'COUNT', javascriptGenerator.ORDER_ATOMIC) || "0";
+                return `this.modPierceCount = Math.max(0, Math.floor(${count}));\n`;
+            };
+
+            javascriptGenerator.forBlock['set_density'] = function(block) {
+                const density = javascriptGenerator.valueToCode(block, 'DENSITY', javascriptGenerator.ORDER_ATOMIC) || "0.001";
+                return `this.modDensity = ${density};\n`;
+            };
+
+            javascriptGenerator.forBlock['set_lifetime'] = function(block) {
+                const cycles = javascriptGenerator.valueToCode(block, 'CYCLES', javascriptGenerator.ORDER_ATOMIC) || "120";
+                return `this.modLifetime = ${cycles};\n`;
+            };
+
+            javascriptGenerator.forBlock['set_bounce'] = function(block) {
+                const val = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || "0.4";
+                return `this.modRestitution = ${val};\n`;
+            };
+
+            javascriptGenerator.forBlock['set_air_drag'] = function(block) {
+                const val = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || "0.02";
+                return `this.modFrictionAir = ${val};\n`;
+            };
+
+            javascriptGenerator.forBlock['set_scale'] = function(block) {
+                const val = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || "1";
+                return `this.modScale = ${val};\n`;
+            };
+
+            javascriptGenerator.forBlock['add_spin'] = function(block) {
+                const val = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || "0.2";
+                return `if (bullet[me]) Matter.Body.setAngularVelocity(bullet[me], ${val});\n`;
+            };
+
+            javascriptGenerator.forBlock['projectile_trail'] = function(block) {
+                const size = javascriptGenerator.valueToCode(block, 'SIZE', javascriptGenerator.ORDER_ATOMIC) || "6";
+                const color = block.getFieldValue('COLOR') || "rgba(80, 255, 240, 0.25)";
+                return `if (bullet[me]) {
+        const oldDo = bullet[me].do;
+        bullet[me].do = function() {
+            oldDo.call(this);
+            if (!this.__trailLast) {
+                this.__trailLast = { x: this.position.x, y: this.position.y };
+            }
+            const last = this.__trailLast;
+            const dx = this.position.x - last.x;
+            const dy = this.position.y - last.y;
+            const steps = 3;
+            for (let i = 1; i <= steps; i++) {
+                simulation.drawList.push({
+                    x: last.x + (dx * i) / steps,
+                    y: last.y + (dy * i) / steps,
+                    radius: ${size},
+                    color: "${color}",
+                    time: 20    
+                });
+            }
+            this.__trailLast.x = this.position.x;
+            this.__trailLast.y = this.position.y;
+        };
+    }\n`;
+            };
+
+            javascriptGenerator.forBlock['homing_mouse'] = function(block) {
+                const strength = javascriptGenerator.valueToCode(block, 'STRENGTH', javascriptGenerator.ORDER_ATOMIC) || "0.002";
+                return `if (bullet[me]) {
+        const oldDo = bullet[me].do;
+        bullet[me].do = function() {
+            oldDo.call(this);
+            const target = (simulation && simulation.mouseInGame) ? simulation.mouseInGame : simulation.mouse;
+            const dx = target.x - this.position.x;
+            const dy = target.y - this.position.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            this.force.x += (dx / dist) * this.mass * ${strength};
+            this.force.y += (dy / dist) * this.mass * ${strength};
+        };
+    }\n`;
+            };
+
+            javascriptGenerator.forBlock['on_end_explode'] = function(block) {
+                const radius = javascriptGenerator.valueToCode(block, 'RADIUS', javascriptGenerator.ORDER_ATOMIC) || "120";
+                return `if (bullet[me]) {
+        const oldEnd = bullet[me].onEnd || function() {};
+        bullet[me].onEnd = function() {
+            oldEnd.call(this);
+            b.explosion(this.position, ${radius});
+        };
+    }\n`;
+            };
+
+            javascriptGenerator.forBlock['on_wall_explode'] = function(block) {
+                const radius = javascriptGenerator.valueToCode(block, 'RADIUS', javascriptGenerator.ORDER_ATOMIC) || "90";
+                return `if (bullet[me]) {
+        const oldWall = bullet[me].onWallHit || function() {};
+        const func = function() {
+            oldWall.call(this);
+            const owner = this.parent || this;
+            b.explosion(owner.position, ${radius});
+            owner.endCycle = 0;
+        };
+        bullet[me].onWallHit = func;
+        if (bullet[me].parts && bullet[me].parts.length > 1) {
+            for (let i = 0; i < bullet[me].parts.length; i++) {
+                bullet[me].parts[i].onWallHit = func;
+            }
+        }
+    }\n`;
+            };
+
+            javascriptGenerator.forBlock['on_hit_enemy'] = function(block) {
+                const branch = javascriptGenerator.statementToCode(block, 'DO');
+                return `if (bullet[me]) {
+        const oldBefore = bullet[me].beforeDmg || function() {};
+        bullet[me].beforeDmg = function(who) {
+            oldBefore.call(this, who);
+${branch}
+        };
+        if (bullet[me].parts && bullet[me].parts.length > 1) {
+            for (let i = 0; i < bullet[me].parts.length; i++) {
+                bullet[me].parts[i].beforeDmg = bullet[me].beforeDmg;
+            }
+        }
+    }\n`;
+            };
+
+            javascriptGenerator.forBlock['on_hit_wall'] = function(block) {
+                const branch = javascriptGenerator.statementToCode(block, 'DO');
+                return `if (bullet[me]) {
+        const oldWall = bullet[me].onWallHit || function() {};
+        bullet[me].onWallHit = function() {
+            oldWall.call(this);
+${branch}
+        };
+        if (bullet[me].parts && bullet[me].parts.length > 1) {
+            for (let i = 0; i < bullet[me].parts.length; i++) {
+                bullet[me].parts[i].onWallHit = bullet[me].onWallHit;
+            }
+        }
+    }\n`;
+            };
+
+            javascriptGenerator.forBlock['explode_at_bullet'] = function(block) {
+                const radius = javascriptGenerator.valueToCode(block, 'RADIUS', javascriptGenerator.ORDER_ATOMIC) || "90";
+                return `if (typeof b !== 'undefined') {
+        const pos = (this && this.position) ? this.position : (bullet[me] ? bullet[me].position : m.pos);
+        b.explosion(pos, ${radius});
+    }\n`;
+            };
+
+            javascriptGenerator.forBlock['shrapnel_on_destroy'] = function(block) {
+                const count = javascriptGenerator.valueToCode(block, 'COUNT', javascriptGenerator.ORDER_ATOMIC) || "6";
+                const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || "6";
+                const size = javascriptGenerator.valueToCode(block, 'SIZE', javascriptGenerator.ORDER_ATOMIC) || "3";
+                const life = javascriptGenerator.valueToCode(block, 'LIFE', javascriptGenerator.ORDER_ATOMIC) || "90";
+                return `if (bullet[me]) {
+        const oldEnd = bullet[me].onEnd || function() {};
+        bullet[me].onEnd = function() {
+            oldEnd.call(this);
+            const n = Math.max(1, Math.floor(${count}));
+            for (let i = 0; i < n; i++) {
+                const dir = Math.random() * Math.PI * 2;
+                const shard = Bodies.circle(this.position.x, this.position.y, ${size}, {
+                    friction: 0.4,
+                    frictionAir: 0.02,
+                    restitution: 0.3,
+                    collisionFilter: {
+                        category: cat.body,
+                        mask: cat.map | cat.body
+                    }
+                });
+                shard.classType = "shrapnel";
+                shard.dmg = 0;
+                shard.minDmgSpeed = 1e9;
+                shard.onEnd = function() {};
+                shard.do = function() {};
+                shard.endCycle = simulation.cycle + Math.max(1, ${life});
+                Composite.add(engine.world, shard);
+                Matter.Body.setVelocity(shard, {
+                    x: this.velocity.x * 0.2 + ${speed} * Math.cos(dir),
+                    y: this.velocity.y * 0.2 + ${speed} * Math.sin(dir)
+                });
+                bullet.push(shard);
+            }
+        };
+    }\n`;
+            };
+
+            javascriptGenerator.forBlock['spawn_block'] = function(block) {
+                const x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC) || "m.pos.x";
+                const y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC) || "m.pos.y";
+                const w = javascriptGenerator.valueToCode(block, 'W', javascriptGenerator.ORDER_ATOMIC) || "100";
+                const h = javascriptGenerator.valueToCode(block, 'H', javascriptGenerator.ORDER_ATOMIC) || "100";
+                return `if (typeof spawn !== 'undefined') spawn.bodyRect(${x}, ${y}, ${w}, ${h});\n`;
+            };
+
+            javascriptGenerator.forBlock['spawn_powerup'] = function(block) {
+                return `if (typeof powerUps !== 'undefined') powerUps.chooseRandomPowerUp(simulation.mouse.x, simulation.mouse.y);\n`;
+            };
+
+            javascriptGenerator.forBlock['spawn_mob'] = function(block) {
+                const type = block.getFieldValue('TYPE');
+                const x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC) || "m.pos.x";
+                const y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC) || "m.pos.y";
+                return `if (typeof spawn !== 'undefined' && spawn.${type}) spawn.${type}(${x}, ${y});\n`;
+            };
+
+            javascriptGenerator.forBlock['spawn_debris'] = function(block) {
+                const x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC) || "m.pos.x";
+                const y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC) || "m.pos.y";
+                const w = javascriptGenerator.valueToCode(block, 'W', javascriptGenerator.ORDER_ATOMIC) || "100";
+                return `if (typeof spawn !== 'undefined') spawn.debris(${x}, ${y}, ${w});\n`;
+            };
+
+            javascriptGenerator.forBlock['get_player_pos'] = function(block) {
+                const axis = block.getFieldValue('AXIS');
+                return [`m.pos.${axis}`, javascriptGenerator.ORDER_ATOMIC];
+            };
+
+            javascriptGenerator.forBlock['get_mouse_pos'] = function(block) {
+                const axis = block.getFieldValue('AXIS');
+                return [`simulation.mouse.${axis}`, javascriptGenerator.ORDER_ATOMIC];
+            };
+
+            javascriptGenerator.forBlock['get_player_stat'] = function(block) {
+                const stat = block.getFieldValue('STAT');
+                if (stat.includes('.')) {
+                    return [`player.${stat}`, javascriptGenerator.ORDER_ATOMIC];
+                }
+                return [`m.${stat}`, javascriptGenerator.ORDER_ATOMIC];
+            };
+
+            javascriptGenerator.forBlock['set_player_stat'] = function(block) {
+                const stat = block.getFieldValue('STAT');
+                const val = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || "0";
+                if (stat.includes('.')) {
+                    return `if (typeof player !== 'undefined') Matter.Body.set(player, "${stat.split('.')[0]}", {${stat.split('.')[1]}: ${val}});\n`;
+                }
+                let code = `m.${stat} = ${val};\n`;
+                if (stat === 'health') code += `m.displayHealth();\n`;
+                return code;
+            };
+
+            javascriptGenerator.forBlock['camera_zoom'] = function(block) {
+                const zoom = javascriptGenerator.valueToCode(block, 'ZOOM', javascriptGenerator.ORDER_ATOMIC) || "1000";
+                return `if (typeof simulation !== 'undefined') simulation.zoomTransition(${zoom});\n`;
+            };
+
+            javascriptGenerator.forBlock['camera_shake'] = function(block) {
+                const mag = javascriptGenerator.valueToCode(block, 'MAG', javascriptGenerator.ORDER_ATOMIC) || "10";
+                return `if (typeof simulation !== 'undefined') {
+                    for (let i = 0; i < 10; i++) {
+                        simulation.drawList.push({
+                            x: m.pos.x + (Math.random() - 0.5) * ${mag},
+                            y: m.pos.y + (Math.random() - 0.5) * ${mag},
+                            radius: ${mag} * 5,
+                            color: "rgba(255, 255, 255, 0.1)",
+                            time: 1
+                        });
+                    }
+                }\n`;
+            };
+
+            javascriptGenerator.forBlock['console_log'] = function(block) {
+                const text = javascriptGenerator.valueToCode(block, 'TEXT', javascriptGenerator.ORDER_ATOMIC) || "''";
+                return `if (typeof simulation !== 'undefined') simulation.inGameConsole(${text});\n`;
+            };
+
+            javascriptGenerator.forBlock['projectile_tilt'] = function(block) {
+                return `if (bullet[me]) {
+        const oldDo = bullet[me].do;
+        bullet[me].do = function() {
+            oldDo.call(this);
+            if (this.velocity.x !== 0 || this.velocity.y !== 0) {
+                const angle = Math.atan2(this.velocity.y, this.velocity.x);
+                Matter.Body.setAngle(this, angle);
+                if (this.parts && this.parts.length > 1) {
+                    for (let i = 0; i < this.parts.length; i++) Matter.Body.setAngle(this.parts[i], angle);
+                }
+            }
+        };
+    }
+    `;
+            };
+
+            javascriptGenerator.forBlock['chance_percent'] = function(block) {
+                const pct = javascriptGenerator.valueToCode(block, 'PCT', javascriptGenerator.ORDER_ATOMIC) || "0";
+                return [`(Math.random() < (${pct} / 100))`, javascriptGenerator.ORDER_ATOMIC];
+            };
+
+            javascriptGenerator.forBlock['random_range'] = function(block) {
+                const min = javascriptGenerator.valueToCode(block, 'MIN', javascriptGenerator.ORDER_ATOMIC) || "0";
+                const max = javascriptGenerator.valueToCode(block, 'MAX', javascriptGenerator.ORDER_ATOMIC) || "1";
+                return [`(${min} + Math.random() * ((${max}) - (${min})))`, javascriptGenerator.ORDER_ATOMIC];
+            };
+
+            // Inject Blockly
+            const neonTheme = Blockly.Theme.defineTheme('ngon_light', {
+                base: Blockly.Themes.Classic,
+                componentStyles: {
+                    workspaceBackgroundColour: '#f0f0f0',
+                    toolboxBackgroundColour: '#ffffff',
+                    toolboxForegroundColour: '#111111',
+                    flyoutBackgroundColour: '#f7f7f7',
+                    flyoutForegroundColour: '#111111',
+                    flyoutOpacity: 1,
+                    scrollbarColour: '#b0b0b0',
+                    insertionMarkerColour: '#333333',
+                    insertionMarkerOpacity: 0.25,
+                    cursorColour: '#333333',
+                    selectedGlowColour: '#08c',
+                    selectedGlowSize: 1
+                },
+                fontStyle: {
+                    family: 'Helvetica, Arial, sans-serif',
+                    weight: '600',
+                    size: 12
+                },
+                startHats: true
+            });
+
+            const workspace = Blockly.inject('blocklyDiv', {
+                toolbox: document.getElementById('toolbox'),
+                scrollbars: true,
+                trashcan: true,
+                renderer: 'zelos',
+                theme: neonTheme,
+                grid: {
+                    spacing: 24,
+                    length: 3,
+                    colour: '#ddd',
+                    snap: true
+                },
+                zoom: {
+                    controls: true,
+                    wheel: true,
+                    startScale: 0.9,
+                    maxScale: 1.4,
+                    minScale: 0.4,
+                    scaleSpeed: 1.1
+                }
+            });
+
+            // Pre-fill with some blocks
+            const initialXml = '<xml><block type="on_load" x="20" y="20"><statement name="STACK"><block type="set_damage"><value name="DMG"><shadow type="math_number"><field name="NUM">0.1</field></shadow></value><next><block type="set_min_dmg_speed"><value name="SPEED"><shadow type="math_number"><field name="NUM">0</field></shadow></value><next><block type="set_mass"><value name="MASS"><shadow type="math_number"><field name="NUM">0.4</field></shadow></value><next><block type="set_bounce"><value name="VALUE"><shadow type="math_number"><field name="NUM">0.2</field></shadow></value><next><block type="set_air_drag"><value name="VALUE"><shadow type="math_number"><field name="NUM">0.01</field></shadow></value></next></block></next></block></next></block></next></block></statement></block><block type="on_fire" x="20" y="260"><statement name="STACK"><block type="set_cooldown"><value name="VALUE"><shadow type="math_number"><field name="NUM">10</field></shadow></value><next><block type="controls_if_else"><value name="CONDITION"><block type="has_gun_tech"><field name="TECH_NAME">Bullet Shape</field></block></value><statement name="DO"><block type="damage_multiply"><value name="VALUE"><shadow type="math_number"><field name="NUM">1.5</field></shadow></value><next><block type="fire_shape"><field name="SHAPE_KEY">Default</field><value name="ANGLE"><shadow type="math_number"><field name="NUM">0</field></shadow></value><value name="SPEED"><shadow type="math_number"><field name="NUM">30</field></shadow></value><next><block type="on_hit_enemy"><statement name="DO"><block type="explode_at_bullet"><value name="RADIUS"><shadow type="math_number"><field name="NUM">70</field></shadow></value></block></statement><next><block type="projectile_trail"><field name="COLOR">rgba(80, 255, 240, 0.25)</field><value name="SIZE"><shadow type="math_number"><field name="NUM">5</field></shadow></value></block></next></block></next></block></next></block></statement><statement name="ELSE"><block type="fire_shape"><field name="SHAPE_KEY">Default</field><value name="ANGLE"><shadow type="math_number"><field name="NUM">0</field></shadow></value><value name="SPEED"><shadow type="math_number"><field name="NUM">30</field></shadow></value><next><block type="projectile_trail"><field name="COLOR">rgba(80, 255, 240, 0.25)</field><value name="SIZE"><shadow type="math_number"><field name="NUM">5</field></shadow></value></block></next></block></statement></block></next></block></statement></block><block type="gun_tech" x="480" y="40"><field name="NAME">Bullet Shape</field><field name="DESCRIPTION">Upgrade your gun tech to amplify base damage.</field><field name="DEPENDENCIES"></field><field name="INCOMPATIBLE"></field><value name="MAX_COUNT"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block></xml>';
+            Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(initialXml), workspace);
+
+            // Shape Editor Logic â€” multiple named shapes
+            const canvas = document.getElementById('shapeCanvas');
+            const ctx = canvas.getContext('2d');
+            const shapeInput = document.getElementById('customShape');
+            const shapeSelect = document.getElementById('shapeSelect');
+            const shapeNameInputEl = document.getElementById('shapeNameInput');
+            const removeShapeBtn = document.getElementById('removeShapeBtn');
+            let shapes = [
+                { id: 'default', name: 'Default', vertices: [
+                    {x: 120, y: 120}, {x: 160, y: 120}, {x: 160, y: 160}, {x: 120, y: 160}
+                ]}
+            ];
+            let currentShapeIndex = 0;
+            let draggingIdx = -1;
+
+            function pathFromVertices(vertices, centerX, centerY) {
+                if (centerX == null) centerX = canvas.width / 2;
+                if (centerY == null) centerY = canvas.height / 2;
+                return vertices.map(v => `${(v.x - centerX).toFixed(0)} ${(v.y - centerY).toFixed(0)}`).join(' ');
+            }
+            function getCurrentVertices() { return shapes[currentShapeIndex].vertices; }
+            function syncShapeDropdown() {
+                shapeSelect.innerHTML = '';
+                shapes.forEach((s, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = s.name;
+                    if (i === currentShapeIndex) opt.selected = true;
+                    shapeSelect.appendChild(opt);
+                });
+                removeShapeBtn.disabled = shapes.length <= 1;
+            }
+            function selectShapeByIndex(index) {
+                if (index < 0 || index >= shapes.length) return;
+                currentShapeIndex = index;
+                shapeNameInputEl.value = shapes[currentShapeIndex].name;
+                syncShapeDropdown();
+                drawShape();
+            }
+            function renameCurrentShape(newName) {
+                if (!newName || !shapes[currentShapeIndex]) return;
+                shapes[currentShapeIndex].name = String(newName).trim() || shapes[currentShapeIndex].name;
+                shapeNameInputEl.value = shapes[currentShapeIndex].name;
+                syncShapeDropdown();
+            }
+            function addShape() {
+                shapes.push({ id: 'shape_' + Date.now(), name: 'Shape ' + (shapes.length + 1), vertices: [] });
+                currentShapeIndex = shapes.length - 1;
+                shapeNameInputEl.value = shapes[currentShapeIndex].name;
+                syncShapeDropdown();
+                drawShape();
+            }
+            function removeCurrentShape() {
+                if (shapes.length <= 1) return;
+                shapes.splice(currentShapeIndex, 1);
+                currentShapeIndex = Math.min(currentShapeIndex, shapes.length - 1);
+                shapeNameInputEl.value = shapes[currentShapeIndex].name;
+                syncShapeDropdown();
+                drawShape();
+            }
+
+            function drawShape() {
+                const vertices = getCurrentVertices();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.strokeStyle = '#222';
+                ctx.beginPath();
+                for(let i=0; i<canvas.width; i+=20) {
+                    ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height);
+                    ctx.moveTo(0, i); ctx.lineTo(canvas.width, i);
+                }
+                ctx.stroke();
+
+                ctx.strokeStyle = '#333';
+                ctx.beginPath();
+                ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height);
+                ctx.moveTo(0, canvas.height/2); ctx.lineTo(canvas.width, canvas.height/2);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width/2 + 20, canvas.height/2);
+                ctx.lineTo(canvas.width/2 + 60, canvas.height/2);
+                ctx.lineTo(canvas.width/2 + 50, canvas.height/2 - 5);
+                ctx.moveTo(canvas.width/2 + 60, canvas.height/2);
+                ctx.lineTo(canvas.width/2 + 50, canvas.height/2 + 5);
+                ctx.stroke();
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px Arial';
+                ctx.fillText('Direction', canvas.width/2 + 25, canvas.height/2 - 10);
+
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+                ctx.strokeRect(canvas.width/2 - 15, canvas.height/2 - 15, 30, 30);
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+                ctx.fillRect(canvas.width/2 - 15, canvas.height/2 - 15, 30, 30);
+
+                if (vertices.length > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(vertices[0].x, vertices[0].y);
+                    for (let i = 1; i < vertices.length; i++) {
+                        ctx.lineTo(vertices[i].x, vertices[i].y);
+                    }
+                    ctx.closePath();
+                    ctx.strokeStyle = '#4CAF50';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
+                    ctx.fill();
+
+                    vertices.forEach((v, i) => {
+                        ctx.fillStyle = (i === draggingIdx) ? '#fff' : '#4CAF50';
+                        ctx.fillRect(v.x - 6, v.y - 6, 12, 12);
+                        ctx.beginPath();
+                        ctx.arc(v.x, v.y, 20, 0, 2 * Math.PI);
+                        ctx.strokeStyle = (i === draggingIdx) ? 'rgba(255,255,255,0.2)' : 'rgba(76, 175, 80, 0.1)';
+                        ctx.stroke();
+                    });
+                }
+                updateShapePath();
+            }
+
+            function updateShapePath() {
+                const vertices = getCurrentVertices();
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                shapeInput.value = pathFromVertices(vertices, centerX, centerY);
+            }
+
+            canvas.onmousedown = (e) => {
+                const vertices = getCurrentVertices();
+                const rect = canvas.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                let y = e.clientY - rect.top;
+
+                if (document.getElementById('gridSnap').checked) {
+                    x = Math.round(x / 10) * 10;
+                    y = Math.round(y / 10) * 10;
+                }
+
+                draggingIdx = vertices.findIndex(v => Math.hypot(v.x - x, v.y - y) < 20);
+
+                if (e.shiftKey && draggingIdx !== -1) {
+                    vertices.splice(draggingIdx, 1);
+                    draggingIdx = -1;
+                } else if (draggingIdx === -1) {
+                    vertices.push({x, y});
+                    draggingIdx = vertices.length - 1;
+                }
+                drawShape();
+            };
+
+            window.onmousemove = (e) => {
+                if (draggingIdx !== -1) {
+                    const vertices = getCurrentVertices();
+                    const rect = canvas.getBoundingClientRect();
+                    let x = e.clientX - rect.left;
+                    let y = e.clientY - rect.top;
+
+                    if (document.getElementById('gridSnap').checked) {
+                        x = Math.round(x / 10) * 10;
+                        y = Math.round(y / 10) * 10;
+                    }
+
+                    vertices[draggingIdx].x = x;
+                    vertices[draggingIdx].y = y;
+                    drawShape();
+                }
+            };
+
+            window.onmouseup = () => { draggingIdx = -1; drawShape(); };
+
+            function clearShape() {
+                shapes[currentShapeIndex].vertices = [];
+                drawShape();
+            }
+
+            function centerShape() {
+                const vertices = getCurrentVertices();
+                if (vertices.length === 0) return;
+                const avgX = vertices.reduce((sum, v) => sum + v.x, 0) / vertices.length;
+                const avgY = vertices.reduce((sum, v) => sum + v.y, 0) / vertices.length;
+                const dx = canvas.width/2 - avgX;
+                const dy = canvas.height/2 - avgY;
+                vertices.forEach(v => { v.x += dx; v.y += dy; });
+                drawShape();
+            }
+
+            function scaleShape(factor) {
+                const vertices = getCurrentVertices();
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                vertices.forEach(v => {
+                    v.x = centerX + (v.x - centerX) * factor;
+                    v.y = centerY + (v.y - centerY) * factor;
+                });
+                drawShape();
+            }
+
+            syncShapeDropdown();
+            if (shapeNameInputEl) shapeNameInputEl.value = shapes[0].name;
+            drawShape();
+
+            function generateMod() {
+                const gunName = document.getElementById('gunName').value || "Blockly Gun";
+                const gunDesc = document.getElementById('gunDescription').value || "Created with blocks.";
+                const gunAmmo = document.getElementById('gunAmmo').value || "10";
+
+                window.__MOD_BUILDER_GUN_NAME = gunName;
+
+                // Generate code from blocks
+                let fireCode = "";
+                let loadCode = "";
+
+                const topBlocks = workspace.getTopBlocks(false);
+                const gunTechBlocks = [];
+
+                for(let block of topBlocks) {
+                    if (block.type === 'on_fire') {
+                        fireCode = javascriptGenerator.blockToCode(block);
+                    } else if (block.type === 'on_load') {
+                        loadCode = javascriptGenerator.blockToCode(block);
+                    } else if (block.type === 'gun_tech') {
+                        gunTechBlocks.push(block);
+                    }
+                }
+
+                // Build gun tech array for command generator
+                function sanitizeTechKey(s) {
+                    if (!s || typeof s !== 'string') return '';
+                    return '_mod' + s.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                }
+
+                const gunNameForTech = (gunName || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                const gunTechArrayCode = [];
+                const techFlagKeys = {}; // name -> flag key for this mod
+
+                // First pass: assign flag key to each tech name
+                for (let i = 0; i < gunTechBlocks.length; i++) {
+                    const block = gunTechBlocks[i];
+                    const name = (block.getFieldValue('NAME') || 'gun tech ' + (i + 1)).trim();
+                    const flagKey = sanitizeTechKey(gunName) + sanitizeTechKey(name);
+                    techFlagKeys[name] = flagKey;
+                }
+
+                function escapeTemplateLiteral(s) {
+                    return s.replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+                }
+
+                for (let i = 0; i < gunTechBlocks.length; i++) {
+                    const block = gunTechBlocks[i];
+                    const name = (block.getFieldValue('NAME') || 'gun tech ' + (i + 1)).trim();
+                    const description = block.getFieldValue('DESCRIPTION') || '';
+                    let maxCount = 1;
+                    const maxCountInput = block.getInputTargetBlock('MAX_COUNT');
+                    if (maxCountInput) {
+                        const n = maxCountInput.getFieldValue('NUM');
+                        if (n !== undefined && n !== null && !isNaN(Number(n))) maxCount = Math.max(1, parseInt(Number(n), 10) || 1);
+                    }
+                    const dependenciesStr = (block.getFieldValue('DEPENDENCIES') || '').trim();
+                    const incompatibleStr = (block.getFieldValue('INCOMPATIBLE') || '').trim();
+                    const dependencies = dependenciesStr ? dependenciesStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+                    const incompatible = incompatibleStr ? incompatibleStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+                    const flagKey = techFlagKeys[name];
+
+                    const descEsc = description.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+                    const nameEsc = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+
+                    const requiresArr = [gunName].concat(dependencies);
+                    const requiresStr = requiresArr.map(s => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')).join(', ');
+
+                    const allowedParts = ['tech.haveGunCheck("' + gunNameForTech + '")'];
+                    dependencies.forEach(dep => {
+                        const dk = techFlagKeys[dep];
+                        if (dk) allowedParts.push('tech.' + dk);
+                    });
+                    incompatible.forEach(inc => {
+                        const ik = techFlagKeys[inc];
+                        if (ik) allowedParts.push('!tech.' + ik);
+                    });
+                    const allowedBody = allowedParts.join(' && ');
+
+                    const isStackable = maxCount > 1;
+                    const effectLine = isStackable ? 'tech.' + flagKey + ' = this.count;' : 'tech.' + flagKey + ' = true;';
+                    const removeLine = isStackable ? 'tech.' + flagKey + ' = 0;' : 'tech.' + flagKey + ' = false;';
+
+                    const rawStack = javascriptGenerator.statementToCode(block, 'STACK') || '';
+                    const stackCode = escapeTemplateLiteral(rawStack)
+                        .split('\n')
+                        .filter(line => line.trim())
+                        .map(line => '                        ' + line)
+                        .join('\n');
+                    const stackEffect = stackCode ? `
+                    const gun = (typeof b !== 'undefined' && b.guns) ? b.guns.find(g => g.name === "${gunNameForTech}") : null;
+                    if (gun) {
+                        const me = -1;
+                        (function() {
+${stackCode}
+                        }).call(gun);
+                    }` : '';
+
+                    gunTechArrayCode.push(`
+            {
+                flagKey: "${flagKey}",
+                modGunName: "${gunNameForTech}",
+                name: "${nameEsc}",
+                descriptionFunction() { return \`${descEsc}\`; },
+                isGunTech: true,
+                maxCount: ${maxCount},
+                count: 0,
+                frequency: 2,
+                frequencyDefault: 2,
+                allowed() { return ${allowedBody}; },
+                requires: "${requiresStr.replace(/"/g, '\\"')}",
+                applyModToGun() {${stackEffect}
+                },
+                effect() {
+                    ${effectLine}
+                    if (this.applyModToGun) this.applyModToGun();
+                },
+                remove() { ${removeLine} }
+            }`);
+                }
+
+                const gunTechRegistrationCode = gunTechArrayCode.length ? `
+        // 1.5 Register Gun Techs (for this weapon)
+        (function() {
+            if (typeof tech === 'undefined' || !tech.tech) return;
+            const gunTechArray = [${gunTechArrayCode.join(',')}
+            ];
+            for (let i = 0; i < gunTechArray.length; i++) {
+                tech.tech.push(gunTechArray[i]);
+            }
+            console.log("Gun techs for " + MOD_NAME + " registered.");
+        })();` : '';
+
+                const centerX = canvas.width / 2, centerY = canvas.height / 2;
+                const shapePaths = {};
+                shapes.forEach(s => {
+                    const path = s.vertices && s.vertices.length ? s.vertices.map(v => (v.x - centerX).toFixed(0) + ' ' + (v.y - centerY).toFixed(0)).join(' ') : '0 0 40 0 40 40 0 40';
+                    const nameEsc = (s.name || 'Default').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                    shapePaths[nameEsc] = path;
+                });
+                const shapePathsKeys = Object.keys(shapePaths);
+                const defaultShapeKey = shapePathsKeys[0] ? shapePathsKeys[0] : 'Default';
+                const CUSTOM_SHAPE_PATHS_JS = shapePathsKeys.length ? shapePathsKeys.map(k => '"' + k + '": "' + (shapePaths[k].replace(/\\/g, '\\\\').replace(/"/g, '\\"')) + '"').join(', ') : '"Default": "0 0 40 0 40 40 0 40"';
+
+                let script = `(() => {
+        // 0. Load dependencies
+        if (typeof decomp === 'undefined') {
+            window.module = { exports: {} };
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/poly-decomp@0.3.0/src/index.js';
+            script.onload = () => {
+                console.log("poly-decomp loaded");
+                window.decomp = module.exports;
+                if (typeof Matter !== 'undefined' && Matter.Common) {
+                    Matter.Common.setDecomp(window.decomp);
+                }
+            };
+            document.head.appendChild(script);
+        } else if (typeof Matter !== 'undefined' && Matter.Common) {
+            Matter.Common.setDecomp(window.decomp);
+        }
+
+        const MOD_NAME = "${gunName}";
+        const CUSTOM_SHAPE_PATHS = { ${CUSTOM_SHAPE_PATHS_JS} };
+        const DEFAULT_SHAPE_KEY = "${defaultShapeKey.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}";
+        console.log("Loading Blockly MOD: " + MOD_NAME + "...");
+
+        // 1. Add Weapon
+        const applyOnLoadToGun = (gun) => {
+            if (!gun || gun.__modOnLoadApplied) return;
+            (function() {
+    ${loadCode.split('\n').filter(l => l.trim()).map(line => '        ' + line).join('\n')}
+            }).call(gun);
+            gun.__modOnLoadApplied = true;
+        };
+
+        const registerWeapon = () => {
+            if (typeof b === 'undefined' || !b.guns) return;
+
+            // Remove existing version if any
+            const existingIdx = b.guns.findIndex(g => g.name === MOD_NAME);
+            if (existingIdx !== -1) {
+                b.guns.splice(existingIdx, 1);
+            }
+
+            const newGun = {
+                name: MOD_NAME,
+                descriptionFunction() { return \`${gunDesc}<br><strong>${gunAmmo}</strong> per \${powerUps.orb.ammo()}\` },
+                ammo: 0,
+                ammoPack: ${gunAmmo},
+                defaultAmmoPack: ${gunAmmo},
+                have: true,
+                do() {},
+                modDamageBase: 0.1,
+                modMinDmgSpeed: 10,
+                modMass: null,
+                modDensity: null,
+                modGravity: null,
+                modRestitution: null,
+                modFrictionAir: null,
+                modScale: 1,
+                modLifetime: null,
+                modPierceCount: 0,
+                modBypassShield: false,
+                modPierceThroughBlocks: false,
+                modPiercePreventMobBlocks: false,
+                modPierceKeepTrajectory: false,
+                modDestroyOnCollision: null,
+                getModDamage() {
+                    const base = this.modDamageBase;
+                    return Math.max(0, base) * (m.damageDone ? m.damageDone : m.dmgScale);
+                },  
+                applyModProps(me) {
+                    if (!bullet[me]) return;
+                    const body = bullet[me];
+                    const val = this.getModDamage();
+                    const minSpeed = this.modMinDmgSpeed;
+                    body.dmg = val;
+                    body.minDmgSpeed = minSpeed;
+                    body.classType = "bullet";
+                    body.__modDestroyOnCollision = this.modDestroyOnCollision || null;
+                    const pierceCount = Math.max(0, Math.floor(Number(this.modPierceCount) || 0));
+                    this.modPierceCount = pierceCount;
+                    body.__pierceRemaining = pierceCount;
+                    body.__modPierceThroughBlocks = this.modPierceThroughBlocks || false;
+                    body.__modPiercePreventMobBlocks = this.modPiercePreventMobBlocks || false;
+                    body.__modPierceKeepTrajectory = this.modPierceKeepTrajectory || false;
+                    if (this.modDensity != null) Matter.Body.setDensity(body, this.modDensity);
+                    if (this.modMass != null) Matter.Body.setMass(body, this.modMass);
+                    if (this.modRestitution != null) body.restitution = this.modRestitution;
+                    if (this.modFrictionAir != null) body.frictionAir = this.modFrictionAir;
+                    if (this.modScale != null && this.modScale !== 1) Matter.Body.scale(body, this.modScale, this.modScale);
+                    if (this.modLifetime != null) body.endCycle = simulation.cycle + Math.max(1, this.modLifetime);
+
+                    if (this.modBypassShield) {
+                        if (body.collisionFilter && typeof cat !== 'undefined') {
+                            body.collisionFilter.mask = body.collisionFilter.mask & ~cat.mobShield;
+                        }
+                        const prevBefore = body.beforeDmg || function() {};
+                        const func = function(who) {
+                            if (who && who.isShielded) {
+                                who.isShielded = false;
+                                requestAnimationFrame(() => { if (who) who.isShielded = true; });
+                            }
+                            prevBefore.call(this, who);
+                        };
+                        body.beforeDmg = func;
+                        if (body.parts && body.parts.length > 1) {
+                            for (let i = 0; i < body.parts.length; i++) {
+                                if (body.parts[i].collisionFilter && typeof cat !== 'undefined') {
+                                    body.parts[i].collisionFilter.mask = body.parts[i].collisionFilter.mask & ~cat.mobShield;
+                                }
+                                body.parts[i].beforeDmg = func;
+                            }
+                        }
+                    }
+
+                    if (this.modDestroyOnCollision) {
+                        const destroy = this.modDestroyOnCollision;
+                        if (destroy === "all" || destroy === "enemy") {
+                            const oldBefore = body.beforeDmg || function() {};
+                            body.beforeDmg = function(who) {
+                                oldBefore.call(this, who);
+                                const owner = this.parent || this;
+                                owner.endCycle = 0;
+                            };
+                            if (body.parts && body.parts.length > 1) {
+                                for (let i = 0; i < body.parts.length; i++) body.parts[i].beforeDmg = body.beforeDmg;
+                            }
+                        }
+                        if (destroy === "all" || destroy === "wall") {
+                            const oldWall = body.onWallHit || function() {};
+                            body.onWallHit = function() {
+                                oldWall.call(this);
+                                const owner = this.parent || this;
+                                owner.endCycle = 0;
+                            };
+                            if (body.parts && body.parts.length > 1) {
+                                for (let i = 0; i < body.parts.length; i++) body.parts[i].onWallHit = body.onWallHit;
+                            }
+                        }
+                    }
+
+                    if (pierceCount > 0) {
+                        const owner = body.parent || body;
+                        owner.__pierceRemaining = pierceCount;
+                        if (owner.__pierceInitialEndCycle == null) owner.__pierceInitialEndCycle = owner.endCycle;
+
+                        const oldBefore = body.beforeDmg || function() {};
+                        body.beforeDmg = function(who) {
+                            const o = this.parent || this;
+                            const prevEnd = o.endCycle;
+                            const lastCycle = o.__lastPierceCycle || -1;
+
+                            // Prevent block spawning if enabled
+                            if (o.__modPiercePreventMobBlocks && who && who.leaveBody !== undefined) {
+                                who.leaveBody = false;
+                            }
+
+                            oldBefore.call(this, who);
+
+                            // Only count once per cycle (compound bodies can fire multiple hits)
+                            if (o.__pierceRemaining > 0 && lastCycle !== simulation.cycle) {
+                                o.__lastPierceCycle = simulation.cycle;
+                                o.__pierceRemaining -= 1;
+                                if (o.__pierceRemaining <= 0) {
+                                    o.endCycle = 0;
+                                    return;
+                                }
+                                if (o.endCycle <= simulation.cycle) {
+                                    const fallback = (o.__pierceInitialEndCycle != null) ? o.__pierceInitialEndCycle : (simulation.cycle + 1);
+                                    o.endCycle = Math.max(prevEnd, fallback);
+                                }
+                            }
+
+                            if (o.__modPierceKeepTrajectory && o.__pierceRemaining > 0) {
+                                Matter.Body.setAngularVelocity(o, 0);
+                                if (o.velocity) {
+                                    const angle = Math.atan2(o.velocity.y, o.velocity.x);
+                                    Matter.Body.setAngle(o, angle);
+                                    if (o.parts && o.parts.length > 1) {
+                                        for (let i = 0; i < o.parts.length; i++) Matter.Body.setAngle(o.parts[i], angle);
+                                    }
+                                }
+                            }
+                        };
+                        if (body.parts && body.parts.length > 1) {
+                            for (let i = 0; i < body.parts.length; i++) body.parts[i].beforeDmg = body.beforeDmg;
+                        }
+
+                        // Keep trajectory - prevent bouncing
+                        if (this.modPierceKeepTrajectory) {
+                            body.restitution = 0;
+                            body.frictionStatic = 0;
+                            body.friction = 0;
+
+                            const oldDo = body.do || function() {};
+                            body.do = function() {
+                                oldDo.call(this);
+                                const o = this.parent || this;
+                                if (o.__pierceRemaining > 0) {
+                                    if (!o.__storedVelocity) {
+                                        o.__storedVelocity = { x: o.velocity.x, y: o.velocity.y };
+                                    }
+                                    const currentSpeed = Math.sqrt(o.velocity.x * o.velocity.x + o.velocity.y * o.velocity.y);
+                                    const storedSpeed = Math.sqrt(o.__storedVelocity.x * o.__storedVelocity.x + o.__storedVelocity.y * o.__storedVelocity.y);
+                                    if (currentSpeed > 0 && Math.abs(currentSpeed - storedSpeed) > 1) {
+                                        Matter.Body.setVelocity(o, {
+                                            x: o.__storedVelocity.x,
+                                            y: o.__storedVelocity.y
+                                        });
+                                    } else {
+                                        o.__storedVelocity.x = o.velocity.x;
+                                        o.__storedVelocity.y = o.velocity.y;
+                                    }
+                                    Matter.Body.setAngularVelocity(o, 0);
+                                    const angle = Math.atan2(o.velocity.y, o.velocity.x);
+                                    Matter.Body.setAngle(o, angle);
+                                    if (o.parts && o.parts.length > 1) {
+                                        for (let i = 0; i < o.parts.length; i++) Matter.Body.setAngle(o.parts[i], angle);
+                                    }
+                                }
+                            };
+
+                            if (body.parts && body.parts.length > 1) {
+                                for (let i = 0; i < body.parts.length; i++) {
+                                    body.parts[i].restitution = 0;
+                                    body.parts[i].frictionStatic = 0;
+                                    body.parts[i].friction = 0;
+                                }
+                            }
+                        }
+                    }
+
+                    if (this.modGravity != null) {
+                        const g = this.modGravity;
+                        const oldDo = body.do || function() {};
+                        body.do = function() {
+                            oldDo.call(this);
+                            this.force.y += this.mass * g;
+                        };
+                    }
+
+                    if (body.parts && body.parts.length > 1) {
+                        for (let i = 0; i < body.parts.length; i++) {
+                            body.parts[i].dmg = val;
+                            body.parts[i].minDmgSpeed = minSpeed;
+                            body.parts[i].classType = "bullet";
+                            body.parts[i].__modDestroyOnCollision = this.modDestroyOnCollision || null;
+                            if (this.modRestitution != null) body.parts[i].restitution = this.modRestitution;
+                            if (this.modFrictionAir != null) body.parts[i].frictionAir = this.modFrictionAir;
+                        }
+                    }
+                },
+                ensureCompoundSync(me) {
+                    if (!bullet[me] || !bullet[me].parts || bullet[me].parts.length <= 1) return;
+                    const oldDo = bullet[me].do || function() {};
+                    bullet[me].do = function() {
+                        oldDo.call(this);
+                        for (let i = 0; i < this.parts.length; i++) {
+                            this.parts[i].velocity.x = this.velocity.x;
+                            this.parts[i].velocity.y = this.velocity.y;
+                            this.parts[i].speed = this.speed;
+                        }
+                    };
+                },
+                fire() {
+                    const me = bullet.length;
+    ${fireCode.split('\n').filter(l => l.trim()).map(line => '                ' + line).join('\n')}
+                },
+                baseFire(angle, speed = 30 + 6 * Math.random()) {
+                    const me = bullet.length;
+                    b.nail({ x: m.pos.x + 30 * Math.cos(m.angle), y: m.pos.y + 30 * Math.sin(m.angle) },
+                           { x: 0.8 * player.velocity.x + speed * Math.cos(angle), y: 0.5 * player.velocity.y + speed * Math.sin(angle) });
+                    this.applyModProps(me);
+                },
+                fireCustomShape(angle, speed = 30, shapeKey = DEFAULT_SHAPE_KEY) {
+                    const me = bullet.length;
+                    const path = CUSTOM_SHAPE_PATHS[shapeKey] || CUSTOM_SHAPE_PATHS[DEFAULT_SHAPE_KEY] || Object.values(CUSTOM_SHAPE_PATHS)[0];
+                    let verts = Matter.Vertices.fromPath(path);
+
+                    // Preserve vertex order (important for concave shapes); just fix winding if needed
+                    if (Matter.Vertices.area(verts) > 0) verts = verts.reverse();
+
+                    const center = Matter.Vertices.centre(verts);
+
+                    // Create body with no rotation first at (0,0)
+                    // Use rotate=true here to get a body that can rotate, but we set initial angle to 0
+                    const attrs = b.fireAttributes(0, true);
+                    let body = Matter.Bodies.fromVertices(0, 0, verts, attrs, true);
+                    if (Array.isArray(body)) {
+                        body = Matter.Body.create({
+                            parts: body,
+                            friction: attrs.friction,
+                            frictionAir: attrs.frictionAir,
+                            collisionFilter: attrs.collisionFilter
+                        });
+                    }
+                    if (body) {
+                        bullet[me] = body;
+
+                        // Apply classType and other attributes to all parts for correct collision detection
+                        if (bullet[me].parts && bullet[me].parts.length > 1) {
+                            for (let i = 0; i < bullet[me].parts.length; i++) {
+                                bullet[me].parts[i].classType = "bullet";
+                                bullet[me].parts[i].collisionFilter = attrs.collisionFilter;
+                                bullet[me].parts[i].dmg = 0;
+                            }
+                        }
+
+                        Matter.Body.setAngle(bullet[me], angle);
+
+                        // The barrel position
+                        const spawnX = m.pos.x + 30 * Math.cos(m.angle);
+                        const spawnY = m.pos.y + 30 * Math.sin(m.angle);
+
+                        // Correcting for the center of mass shift from Matter.js auto-centering.
+                        const rotatedCenter = {
+                            x: center.x * Math.cos(angle) - center.y * Math.sin(angle),
+                            y: center.x * Math.sin(angle) + center.y * Math.cos(angle)
+                        };
+
+                        Matter.Body.setPosition(bullet[me], {
+                            x: spawnX + rotatedCenter.x,
+                            y: spawnY + rotatedCenter.y
+                        });
+
+                        Matter.Composite.add(engine.world, bullet[me]);
+                        Matter.Body.setVelocity(bullet[me], {
+                            x: 0.5 * player.velocity.x + speed * Math.cos(angle),
+                            y: 0.5 * player.velocity.y + speed * Math.sin(angle)
+                        });
+                        bullet[me].endCycle = simulation.cycle + 180;
+                        bullet[me].do = () => {};
+                        this.applyModProps(me);
+                        this.ensureCompoundSync(me);
+                    }
+                }
+            };
+            b.guns.push(newGun);
+            applyOnLoadToGun(newGun);
+            console.log("Weapon " + MOD_NAME + " registered.");
+
+            if (typeof simulation !== 'undefined' && simulation.switchToGunInInventory && document.getElementById("guns")) {
+                 const newIdx = b.guns.length - 1;
+                 if (!b.inventory.includes(newIdx)) b.inventory.push(newIdx);
+                 simulation.makeGunHUD();
+                 simulation.switchToGunInInventory(b.inventory.length - 1);
+            }
+        };
+
+        const applyActiveGunTech = () => {
+            if (typeof b === 'undefined' || !b.guns) return;
+            const gun = b.guns.find(g => g.name === MOD_NAME);
+            if (!gun || gun.__modTechApplied) return;
+            if (typeof tech === 'undefined' || !tech.tech) return;
+            let sawTech = false;
+            for (let i = 0; i < tech.tech.length; i++) {
+                const t = tech.tech[i];
+                if (!t || !t.isGunTech || t.modGunName !== MOD_NAME || !t.flagKey) continue;
+                sawTech = true;
+                const count = (t.maxCount > 1 && typeof tech[t.flagKey] === 'number') ? Math.max(0, tech[t.flagKey]) : (tech[t.flagKey] ? 1 : 0);
+                if (count > 0 && t.applyModToGun) {
+                    for (let k = 0; k < count; k++) t.applyModToGun();
+                }
+            }
+            if (sawTech) gun.__modTechApplied = true;
+        };
+
+        const installModBuilderCollisionHooks = () => {
+            if (typeof Matter === 'undefined' || typeof engine === 'undefined' || !Matter.Events) return;
+            if (typeof cat === 'undefined') return;
+            if (window.__modBuilderDestroyHookEngine === engine) return;
+            window.__modBuilderDestroyHookEngine = engine;
+
+            const isMobBody = (body) => {
+                if (typeof mob === 'undefined' || !mob) return false;
+                for (let i = 0; i < mob.length; i++) {
+                    if (mob[i] === body) return true;
+                }
+                return false;
+            };
+
+            const handleDestroy = (primary, other) => {
+                const owner = primary.parent || primary;
+                const mode = owner.__modDestroyOnCollision;
+                if (!mode) return;
+                const otherOwner = other.parent || other;
+                if (otherOwner === owner) return;
+                const otherCat = other.collisionFilter ? other.collisionFilter.category : 0;
+                const isWall = otherCat === cat.map || otherCat === cat.body;
+                const isBlock = otherCat === cat.body;
+                let isEnemy = false;
+                if (mode === "all" || mode === "enemy") {
+                    isEnemy = isMobBody(otherOwner);
+                }
+                const pierceRemaining = (owner && typeof owner.__pierceRemaining === 'number') ? owner.__pierceRemaining : 0;
+                const allowEnemyPierce = pierceRemaining > 0;
+                const allowBlockPierce = pierceRemaining > 0 && owner.__modPierceThroughBlocks && isBlock;
+                const lastBlockCycle = owner.__lastPierceBlockCycle || -1;
+
+                if (mode === "wall" && isWall && !allowBlockPierce) {
+                    owner.endCycle = 0;
+                    return;
+                }
+                if (mode === "enemy" && isEnemy) {
+                    if (!allowEnemyPierce) owner.endCycle = 0;
+                    return;
+                }
+                if (mode === "all") {
+                    if (isWall && !allowBlockPierce) {
+                        owner.endCycle = 0;
+                        return;
+                    }
+                    if (isEnemy) {
+                        if (!allowEnemyPierce) owner.endCycle = 0;
+                        return;
+                    }
+                }
+
+                if (allowBlockPierce && lastBlockCycle !== simulation.cycle) {
+                    owner.__lastPierceBlockCycle = simulation.cycle;
+                    owner.__pierceRemaining = Math.max(0, pierceRemaining - 1);
+                    if (owner.__pierceRemaining <= 0) {
+                        owner.endCycle = 0;
+                        return;
+                    }
+                    if (owner.__modPierceKeepTrajectory) {
+                        Matter.Body.setAngularVelocity(owner, 0);
+                        if (owner.velocity) {
+                            const angle = Math.atan2(owner.velocity.y, owner.velocity.x);
+                            Matter.Body.setAngle(owner, angle);
+                            if (owner.parts && owner.parts.length > 1) {
+                                for (let i = 0; i < owner.parts.length; i++) Matter.Body.setAngle(owner.parts[i], angle);
+                            }
+                        }
+                    }
+                }
+            };
+
+            Matter.Events.on(engine, 'collisionStart', function(event) {
+                const pairs = event.pairs || [];
+                for (let i = 0; i < pairs.length; i++) {
+                    const a = pairs[i].bodyA;
+                    const b = pairs[i].bodyB;
+                    if (!a || !b) continue;
+                    handleDestroy(a, b);
+                    handleDestroy(b, a);
+                }
+            });
+        };
+
+        // Initial registration
+        const tryRegister = () => {
+            const firstPath = Object.values(CUSTOM_SHAPE_PATHS)[0];
+            if (firstPath && firstPath.split(' ').length > 4 && typeof decomp === 'undefined') {
+                setTimeout(tryRegister, 100);
+                return;
+            }
+
+            // Fix for concave shapes: override bulletDraw to support compound bodies (parts)
+            if (b.bulletDraw && b.bulletDraw.toString().indexOf('parts') === -1) {
+                b.bulletDraw = function() {
+                    ctx.beginPath();
+                    for (let i = 0, len = bullet.length; i < len; i++) {
+                        if (bullet[i].parts && bullet[i].parts.length > 1) {
+                            for (let k = 1; k < bullet[i].parts.length; k++) {
+                                const vertices = bullet[i].parts[k].vertices;
+                                ctx.moveTo(vertices[0].x, vertices[0].y);
+                                for (let j = 1; j < vertices.length; j++) {
+                                    ctx.lineTo(vertices[j].x, vertices[j].y);
+                                }
+                                ctx.lineTo(vertices[0].x, vertices[0].y);
+                            }
+                        } else if (bullet[i].vertices && bullet[i].vertices.length > 0) {
+                            const vertices = bullet[i].vertices;
+                            ctx.moveTo(vertices[0].x, vertices[0].y);
+                            for (let j = 1; j < vertices.length; j++) {
+                                ctx.lineTo(vertices[j].x, vertices[j].y);
+                            }
+                            ctx.lineTo(vertices[0].x, vertices[0].y);
+                        }
+                    }
+                    ctx.fillStyle = color.bullet;
+                    ctx.fill();
+                };
+            }
+
+            installModBuilderCollisionHooks();
+            registerWeapon();
+        };
+        tryRegister();
+${gunTechRegistrationCode}
+
+        // Re-register on game start
+        const checkInterval = setInterval(() => {
+            installModBuilderCollisionHooks();
+            if (typeof b !== 'undefined' && b.guns && !b.guns.find(g => g.name === MOD_NAME)) {
+                registerWeapon();
+            }
+            if (typeof b !== 'undefined' && b.guns) {
+                const gun = b.guns.find(g => g.name === MOD_NAME);
+                if (gun) applyOnLoadToGun(gun);
+            }
+            applyActiveGunTech();
+        }, 1000);
+
+        // 2. Load Logic
+        const runOnLoad = () => {
+            const gun = (typeof b !== 'undefined' && b.guns) ? b.guns.find(g => g.name === MOD_NAME) : null;
+            applyOnLoadToGun(gun);
+        };
+        runOnLoad();
+        applyActiveGunTech();
+
+        console.log("MOD " + MOD_NAME + " loaded successfully!");
+    })()`;
+
+                document.getElementById('exportOutput').textContent = script;
+                document.getElementById('exportContainer').style.display = 'block';
+            }
+
+            function copyToClipboard() {
+                const text = document.getElementById('exportOutput').textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("Command copied to clipboard!");
+                });
+            }
+
+            const STORAGE_KEY = 'ngon_mod_builder_state';
+
+            function saveToLocalStorage() {
+                try {
+                    const workspaceToDom = (Blockly.utils && Blockly.utils.xml && Blockly.utils.xml.workspaceToDom) || Blockly.Xml.workspaceToDom;
+                    const domToText = (Blockly.utils && Blockly.utils.xml && Blockly.utils.xml.domToText) || Blockly.Xml.domToText;
+                    const dom = workspaceToDom(workspace);
+                    const blocksXml = domToText(dom);
+                    const state = {
+                        gunName: document.getElementById('gunName').value,
+                        gunDescription: document.getElementById('gunDescription').value,
+                        gunAmmo: document.getElementById('gunAmmo').value,
+                        shapes: shapes.map(s => ({ id: s.id, name: s.name, vertices: s.vertices.map(v => ({ x: v.x, y: v.y })) })),
+                        blocksXml: blocksXml
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                    alert("Saved to this browser.");
+                } catch (err) {
+                    alert("Save failed: " + (err && err.message ? err.message : String(err)));
+                }
+            }
+
+            function loadFromLocalStorage() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (!raw) {
+                        alert("Nothing saved yet. Save first.");
+                        return;
+                    }
+                    const state = JSON.parse(raw);
+
+                    document.getElementById('gunName').value = state.gunName != null ? state.gunName : '';
+                    document.getElementById('gunDescription').value = state.gunDescription != null ? state.gunDescription : '';
+                    document.getElementById('gunAmmo').value = state.gunAmmo != null ? state.gunAmmo : '10';
+
+                    if (state.shapes && Array.isArray(state.shapes) && state.shapes.length > 0) {
+                        shapes = state.shapes.map(s => ({
+                            id: s.id || ('shape_' + Date.now()),
+                            name: s.name || 'Shape',
+                            vertices: (s.vertices || []).map(v => ({ x: v.x, y: v.y }))
+                        }));
+                        currentShapeIndex = 0;
+                        syncShapeDropdown();
+                        if (shapeNameInputEl) shapeNameInputEl.value = shapes[0].name;
+                        drawShape();
+                    }
+
+                    if (state.blocksXml) {
+                        workspace.clear();
+                        let dom;
+                        if (Blockly.utils && Blockly.utils.xml && typeof Blockly.utils.xml.textToDom === 'function') {
+                            dom = Blockly.utils.xml.textToDom(state.blocksXml);
+                        } else if (Blockly.Xml && typeof Blockly.Xml.textToDom === 'function') {
+                            dom = Blockly.Xml.textToDom(state.blocksXml);
+                        } else {
+                            dom = new DOMParser().parseFromString('<xml>' + state.blocksXml + '</xml>', 'text/xml');
+                        }
+                        Blockly.Xml.domToWorkspace(dom, workspace);
+                    }
+
+                    alert("Loaded from this browser.");
+                } catch (err) {
+                    alert("Load failed: " + (err && err.message ? err.message : String(err)));
+                }
+            }
+        </script>
+    </body>
+    </html>

@@ -714,13 +714,14 @@ ${simulation.difficultyMode > 4 ? `<details id="constraints-details" style="padd
     isExperimentRun: false,
     techText(i) {
         return `<div class="card-text" >
-                                <div class="grid-title" ><div class="circle-grid-title tech"></div> &nbsp; ${build.nameLink(tech.tech[i].name)} ${tech.tech[i].count > 1 ? `(${tech.tech[i].count}x)` : ""}</div>
+                                <div class="grid-title" ><div class="circle-grid-title tech"></div> &nbsp; ${build.nameLink(tech.tech[i].name)}
+                                ${tech.tech[i].maxCount > 1 ? `&nbsp; x<input type='number' step='1' value='${tech.tech[i].count}' min='0' max='${tech.tech[i].maxCount}' onclick='event.stopPropagation();' oninput='build.changeTechCount(${i}, this.value)' style='width: 32px; background: transparent; color: inherit; border: none; border-bottom: 1px solid currentColor; font-family: inherit; font-size: inherit; text-align: center;'>` : ""}</div>
                                 ${tech.tech[i].descriptionFunction ? tech.tech[i].descriptionFunction() : tech.tech[i].description}</div>`
     },
     instantTechText(i) {
-        // 
         return `<div class="card-text" >
-                                <div class="grid-title" > <div class="circle-grid-instant"></div> &nbsp; ${build.nameLink(tech.tech[i].name)} ${tech.tech[i].count > 1 ? `(${tech.tech[i].count}x)` : ""}</div>
+                                <div class="grid-title" > <div class="circle-grid-instant"></div> &nbsp; ${build.nameLink(tech.tech[i].name)}
+                                ${tech.tech[i].maxCount > 1 ? `&nbsp; x<input type='number' step='1' value='${tech.tech[i].count}' min='0' max='${tech.tech[i].maxCount}' onclick='event.stopPropagation();' oninput='build.changeTechCount(${i}, this.value)' style='width: 32px; background: transparent; color: inherit; border: none; border-bottom: 1px solid currentColor; font-family: inherit; font-size: inherit; text-align: center;'>` : ""}</div>
                                 ${tech.tech[i].descriptionFunction ? tech.tech[i].descriptionFunction() : tech.tech[i].description}</div>`
     },
     skinTechText(i) {
@@ -728,7 +729,8 @@ ${simulation.difficultyMode > 4 ? `<details id="constraints-details" style="padd
                                 <span style="position:relative;">
                                     <div class="circle-grid-skin"></div>
                                     <div class="circle-grid-skin-eye"></div>
-                                </span> &nbsp; &nbsp; &nbsp; &nbsp; ${build.nameLink(tech.tech[i].name)} ${tech.tech[i].count > 1 ? `(${tech.tech[i].count}x)` : ""}</div>
+                                </span> &nbsp; &nbsp; &nbsp; &nbsp; ${build.nameLink(tech.tech[i].name)}
+                                ${tech.tech[i].maxCount > 1 ? `&nbsp; x<input type='number' step='1' value='${tech.tech[i].count}' min='0' max='${tech.tech[i].maxCount}' onclick='event.stopPropagation();' oninput='build.changeTechCount(${i}, this.value)' style='width: 32px; background: transparent; color: inherit; border: none; border-bottom: 1px solid currentColor; font-family: inherit; font-size: inherit; text-align: center;'>` : ""}</div>
                                 ${tech.tech[i].descriptionFunction ? tech.tech[i].descriptionFunction() : tech.tech[i].description}</div>`
     },
     gunTechText(i) {
@@ -736,7 +738,8 @@ ${simulation.difficultyMode > 4 ? `<details id="constraints-details" style="padd
                                 <span style="position:relative;">
                                     <div class="circle-grid-title tech" style="position:absolute; top:0.12em; left:0;opacity:0.8;"></div>
                                     <div class="circle-grid-title gun" style="position:absolute; top:0.12em; left:10px; opacity:0.65;"></div>
-                                </span> &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; ${build.nameLink(tech.tech[i].name)} ${tech.tech[i].count > 1 ? `(${tech.tech[i].count}x)` : ""}</div>
+                                </span> &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; ${build.nameLink(tech.tech[i].name)}
+                                ${tech.tech[i].maxCount > 1 ? `&nbsp; x<input type='number' step='1' value='${tech.tech[i].count}' min='0' max='${tech.tech[i].maxCount}' onclick='event.stopPropagation();' oninput='build.changeTechCount(${i}, this.value)' style='width: 32px; background: transparent; color: inherit; border: none; border-bottom: 1px solid currentColor; font-family: inherit; font-size: inherit; text-align: center;'>` : ""}</div>
                                 ${tech.tech[i].descriptionFunction ? tech.tech[i].descriptionFunction() : tech.tech[i].description}</div>`
     },
     fieldTechText(i) {
@@ -744,13 +747,56 @@ ${simulation.difficultyMode > 4 ? `<details id="constraints-details" style="padd
                                 <span style="position:relative;">
                                     <div class="circle-grid-title tech" style="position:absolute; top:0.12em; left:0;opacity:0.8;"></div>
                                     <div class="circle-grid-title field" style="position:absolute; top:0.12em; left:10px;opacity:0.65;"></div>
-                                </span> &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; ${build.nameLink(tech.tech[i].name)} ${tech.tech[i].count > 1 ? `(${tech.tech[i].count}x)` : ""}</div>
+                                </span> &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; ${build.nameLink(tech.tech[i].name)}
+                                ${tech.tech[i].maxCount > 1 ? `&nbsp; x<input type='number' step='1' value='${tech.tech[i].count}' min='0' max='${tech.tech[i].maxCount}' onclick='event.stopPropagation();' oninput='build.changeTechCount(${i}, this.value)' style='width: 32px; background: transparent; color: inherit; border: none; border-bottom: 1px solid currentColor; font-family: inherit; font-size: inherit; text-align: center;'>` : ""}</div>
                                 ${tech.tech[i].descriptionFunction ? tech.tech[i].descriptionFunction() : tech.tech[i].description}</div>`
     },
     junkTechText(i) {
         return `<div class="card-text">
-                                <div class="grid-title"><div class="circle-grid-title junk"></div> &nbsp; ${build.nameLink(tech.tech[i].name)} ${tech.tech[i].count > 1 ? `(${tech.tech[i].count}x)` : ""}</div>
+                                <div class="grid-title"><div class="circle-grid-title junk"></div> &nbsp; ${build.nameLink(tech.tech[i].name)}
+                                ${tech.tech[i].maxCount > 1 ? `&nbsp; x<input type='number' step='1' value='${tech.tech[i].count}' min='0' max='${tech.tech[i].maxCount}' onclick='event.stopPropagation();' oninput='build.changeTechCount(${i}, this.value)' style='width: 32px; background: transparent; color: inherit; border: none; border-bottom: 1px solid currentColor; font-family: inherit; font-size: inherit; text-align: center;'>` : ""}</div>
                                 ${tech.tech[i].descriptionFunction ? tech.tech[i].descriptionFunction() : tech.tech[i].description}</div>`
+    },
+    changeTechCount(index, newValue) {
+        const techObj = tech.tech[index];
+        newValue = Math.min(techObj.maxCount, Math.max(0, parseInt(newValue) || 0));
+        if (newValue > techObj.count) {
+            const num = newValue - techObj.count;
+            for (let i = 0; i < num; i++) tech.giveTech(index);
+        } else if (newValue < techObj.count) {
+            const num = newValue;
+            tech.removeTech(index);
+            for (let i = 0; i < num; i++) tech.giveTech(index);
+        }
+        // build.updateExperimentText();
+        const techID = document.getElementById("tech-" + index)
+        if (techObj.isFieldTech) {
+            techID.innerHTML = build.fieldTechText(index)
+        } else if (techObj.isGunTech) {
+            techID.innerHTML = build.gunTechText(index)
+        } else if (techObj.isJunk) {
+            techID.innerHTML = build.junkTechText(index)
+        } else if (techObj.isSkin) {
+            techID.innerHTML = build.skinTechText(index)
+        } else if (techObj.isInstant) {
+            techID.innerHTML = build.instantTechText(index)
+        } else {
+            techID.innerHTML = build.techText(index)
+        }
+        if (techObj.count > 0 && !techID.classList.contains("build-tech-selected")) {
+            techID.classList.add("build-tech-selected");
+        } else if (techObj.count === 0 && techID.classList.contains("build-tech-selected")) {
+            techID.classList.remove("build-tech-selected");
+        }
+        // Restore focus to the input if it was active
+        const input = techID.querySelector('input');
+        if (input) {
+            input.focus();
+            // Set cursor to the end of the input
+            const val = input.value;
+            input.value = '';
+            input.value = val;
+        }
     },
     choosePowerUp(index, type, isAllowed = false) {
         if (type === "gun") {
@@ -873,6 +919,7 @@ ${simulation.difficultyMode > 4 ? `<details id="constraints-details" style="padd
         <button onclick="build.sortTech('energy', true)" class='sort-button'><strong class='color-f'>energy</strong></button>
         <input type="search" id="sort-input" style="width: 7.5em;font-size: 0.6em;color:#000;" placeholder="sort by" />
         <button onclick="build.sortTech('input', true)" class='sort-button' style="border-radius: 0em;border: 1.5px #000 solid;font-size: 0.6em;" value="damage">sort</button>
+        <input type="number" step="1" id="techLimitInput" value="9" oninput="techLimit=this.value" style="width: 32px; background: transparent; color: inherit; border: none; border-bottom: 1px solid currentColor; font-family: inherit; font-size: inherit; text-align: center;" />
     </div>
     <div>
         <div style="display: grid;grid-template-columns: repeat(3, 1fr);row-gap: 10px;column-gap: 25px;grid-auto-rows: minmax(5px, auto);margin:-5px 0px 10px 25px;line-height: 100%;">
@@ -1657,7 +1704,11 @@ window.addEventListener("keydown", function (event) {
                 spawn.randomLevelBoss(simulation.mouseInGame.x, simulation.mouseInGame.y);
                 break
             case "9":
+<<<<<<< HEAD
                 powerUps.warp.effect()
+=======
+                powerUps.directSpawn(simulation.mouseInGame.x, simulation.mouseInGame.y, "warp");
+>>>>>>> ac0df50 (More fun)
                 break
             case "f":
                 const mode = (m.fieldMode === m.fieldUpgrades.length - 1) ? 0 : m.fieldMode + 1

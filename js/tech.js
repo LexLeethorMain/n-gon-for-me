@@ -1,3 +1,17 @@
+let _techLimit = 9;
+Object.defineProperty(window, 'techLimit', {
+    get() {
+        return _techLimit;
+    },
+    set(value) {
+        _techLimit = value;
+        for (let i = 0, len = tech.tech.length; i < len; i++) {
+            if (tech.tech[i].isTechLimit) tech.tech[i].maxCount = value;
+        }
+    },
+    configurable: true,
+    enumerable: true
+});
 const tech = {
     totalCount: null,
     removeCount: 0,
@@ -1116,7 +1130,7 @@ const tech = {
         descriptionFunction() {
             return `spawn ${powerUps.orb.gun()} ${powerUps.orb.ammo(10)}`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         isInstant: true,
         frequency: 1,
@@ -1319,7 +1333,7 @@ const tech = {
     {
         name: "dead reckoning",
         description: `if your <strong class="color-speed">speed</strong> is 0<br><strong>1.5x</strong> <strong class='color-d'>damage</strong>`,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -1474,7 +1488,7 @@ const tech = {
             if (this.count) currentRate = `<em style ="float: right;">(${(totalRate).toFixed(2)}x)</em>`
             return `randomly gain between <strong>1x</strong> and <strong>2x</strong> <em>fire rate</em><br><strong>+5%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>` + currentRate
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -1514,7 +1528,7 @@ const tech = {
             if (this.count) currentDamage = `<br><em style ="float: right;">(${(damageTotal).toFixed(2)}x)</em>`
             return `randomly gain up to <strong>1.3x</strong> <strong class='color-d'>damage</strong>` + currentDamage
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -1658,7 +1672,7 @@ const tech = {
     {
         name: "shear stress",
         description: "after mobs <strong>die</strong><br>they fire a <strong>nail</strong> at nearby mobs",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -1697,7 +1711,7 @@ const tech = {
         descriptionFunction() {
             return `after mobs <strong>die</strong> there is a <strong>13%</strong> chance<br>they grow ${b.guns[6].nameString('s')}`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -1737,7 +1751,7 @@ const tech = {
             // const predict = this.count === 0 ? `<em style="text-decoration: line-through;">${(1 + powerUps.boost.damage).toFixed(2)}x</em>` : ``
             return `${powerUps.orb.boost(1)} give an additional <strong>${(1 + 0.75).toFixed(2)}x</strong> <strong class='color-d'>damage</strong><br>but their <strong>duration</strong> is reduced by <strong>1</strong> second`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 1,
         frequency: 2,
         frequencyDefault: 2,
@@ -1819,7 +1833,7 @@ const tech = {
         descriptionFunction() {
             return `<strong>8%</strong> chance to spawn ${powerUps.orb.heal(1)} after mobs <strong>die</strong>`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -1920,7 +1934,7 @@ const tech = {
         name: "nail-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">nail-bot</a>`,
         description: "construct a <strong class='color-bot'>bot</strong> that fires <strong>nails</strong> at mobs",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -1978,7 +1992,7 @@ const tech = {
         name: "foam-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">foam-bot</a>`,
         description: "construct a <strong class='color-bot'>bot</strong> that sprays sticky <strong>foam</strong> at mobs",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -2036,7 +2050,7 @@ const tech = {
         name: "sound-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">sound-bot</a>`,
         description: "construct a <strong class='color-bot'>bot</strong> that emits expanding<br>arcs of <strong>sound</strong> aimed towards nearby mobs",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -2092,7 +2106,7 @@ const tech = {
         name: "boom-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">boom-bot</a>`,
         description: "construct a <strong class='color-bot'>bot</strong> that <strong class='color-e'>explodes</strong> nearby mobs",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -2150,7 +2164,7 @@ const tech = {
         name: "laser-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">laser-bot</a>`,
         description: "construct a <strong class='color-bot'>bot</strong> that uses <strong class='color-f'>energy</strong> to emit<br>a <strong class='color-laser'>laser</strong> that targets mobs",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -2208,7 +2222,7 @@ const tech = {
         name: "orbital-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">orbital-bot</a>`,
         description: "construct a <strong class='color-bot'>bot</strong> locked in <strong>orbit</strong> around you<br>that <strong>stuns</strong> and <strong class='color-d'>damages</strong> mobs",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -2275,7 +2289,7 @@ const tech = {
         name: "dynamo-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">dynamo-bot</a>`,
         description: "construct a <strong class='color-bot'>bot</strong> that <strong class='color-d'>damages</strong> mobs and<br>generates <strong>+8</strong> <strong class='color-f'>energy</strong> per second if near",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -2966,7 +2980,7 @@ const tech = {
     {
         name: "Pauli exclusion",
         description: `for <strong>7</strong> seconds after mob <strong>collisions</strong> gain<br><strong class="color-invulnerable">invulnerability</strong> and <em style="opacity: 0.3;">blocked <strong class='color-f'>energy</strong> regen</em>`,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -3167,7 +3181,7 @@ const tech = {
     {
         name: "overcharge",
         description: "<strong>+100</strong> maximum <strong class='color-f'>energy</strong><br><strong>+5%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -3240,7 +3254,7 @@ const tech = {
     {
         name: "energy conservation",
         description: "doing <strong class='color-d'>damage</strong> to mobs generates <strong class='color-f'>energy</strong>",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -3752,7 +3766,7 @@ const tech = {
             const c = Math.ceil(this.rate * m.coupling)
             return `at the start of each <strong>level</strong> <em style ="float: right;">(get ${r} ${powerUps.orb.research(1)}, ${(Math.ceil(c / 3)).toFixed(0)} ${powerUps.orb.coupling(1)})</em><br>spawn <strong>${(100 * this.rate).toFixed(0)}%</strong> of your ${powerUps.orb.research(1)} and <strong>${(100 * this.rate / 3).toFixed(0)}%</strong> of your ${powerUps.orb.coupling(1)}`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -4231,7 +4245,7 @@ const tech = {
     {
         name: "emergence",
         description: `${powerUps.orb.field()}, ${powerUps.orb.tech()}, and ${powerUps.orb.gun()} have <strong>+1</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ce</span></strong><br><strong>1.1x</strong> <strong class='color-d'>damage</strong>`,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -4542,7 +4556,7 @@ const tech = {
         descriptionFunction() {
             return `spawn ${this.value > 36 ? this.value + powerUps.orb.research(1) : powerUps.orb.research(this.value)} <br>next time increase amount spawned by +4${powerUps.orb.research(1)}`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -4563,7 +4577,7 @@ const tech = {
         descriptionFunction() {
             return `spawn ${this.value > 33 ? this.value + powerUps.orb.ammo(1) : powerUps.orb.ammo(this.value)}<br>next time increase amount spawned by +7${powerUps.orb.ammo(1)}`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -4584,7 +4598,7 @@ const tech = {
         descriptionFunction() {
             return `spawn ${this.value > 30 ? this.value + powerUps.orb.heal(1) : powerUps.orb.heal(this.value)}<br>next time increase amount spawned by +7${powerUps.orb.heal(1)}`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -4605,7 +4619,7 @@ const tech = {
         descriptionFunction() {
             return `spawn ${powerUps.orb.field(1)}&nbsp; ${powerUps.orb.coupling(9)}<br><em>${m.couplingDescription(1)} per ${powerUps.orb.coupling(1)}</em>`
         },
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -4814,7 +4828,7 @@ const tech = {
     {
         name: "replication",
         description: "<strong>+10%</strong> chance to <strong class='color-dup'>duplicate</strong> new <strong>power ups</strong><br><strong>+10%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -6077,7 +6091,7 @@ const tech = {
         name: "gauge",
         description: `<strong>rivets</strong>, <strong>needles</strong>, <strong>super balls</strong>, and <strong>nails</strong><br>have <strong>1.3x</strong> mass and physical <strong class='color-d'>damage</strong>`,
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -6254,7 +6268,7 @@ const tech = {
         name: "repeater",
         description: "<strong>shotgun</strong> fires again for no <strong class='color-ammo'>ammo</strong><br>reduced <strong>0.5x</strong> <strong>shotgun</strong> <em>fire rate</em>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -6387,7 +6401,7 @@ const tech = {
         name: "crystallizer",
         description: "after <strong class='color-s'>frozen</strong> mobs <strong>die</strong> they<br>shatter into <strong class='color-s'>ice IX</strong> crystals",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -6406,7 +6420,7 @@ const tech = {
         name: "thermoelectric effect",
         description: "after <strong>killing</strong> mobs with <strong class='color-s'>ice IX</strong><br><strong>+100</strong> <strong class='color-f'>energy</strong>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -6576,7 +6590,7 @@ const tech = {
         name: "super duper",
         description: `randomly fire <strong>+0</strong>, <strong>+1</strong>, <strong>+2</strong>, or <strong>+3</strong> extra <strong>super balls</strong>`,
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -6662,7 +6676,7 @@ const tech = {
         name: "propagation",
         description: `<strong>0.75x</strong> wave propagation <strong class="color-speed">speed</strong><br><strong>1.4x</strong> wave <strong class='color-d'>damage</strong>`,
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -6683,7 +6697,7 @@ const tech = {
         name: "bound state",
         description: "wave packets <strong>reflect</strong> backwards <strong>2</strong> times<br><strong>0.7x</strong> wave <strong>range</strong>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -7049,7 +7063,7 @@ const tech = {
         name: "fragmentation",
         description: "some <strong class='color-e'>detonations</strong> and collisions eject <strong>nails</strong><br><em style = 'font-size: 90%'>blocks, grenades, missiles, rivets, harpoon</em>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -7068,7 +7082,7 @@ const tech = {
         name: "ammonium nitrate",
         description: "<strong>1.25x</strong> <strong class='color-e'>explosive</strong> <strong class='color-d'>damage</strong>, radius",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -7166,7 +7180,7 @@ const tech = {
         name: "MIRV",
         description: "fire <strong>+1</strong> <strong>missile</strong> or <strong>grenade</strong> per shot<br><strong>0.88x</strong> <strong class='color-e'>explosion</strong> <strong class='color-d'>damage</strong> and <strong>radius</strong>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -7404,7 +7418,7 @@ const tech = {
         name: "nuclear transmutation",
         description: `<strong>1.5x</strong> <strong class='color-p'>radiation</strong> <strong class='color-d'>damage</strong><em style ="font-size:88%;float: right;">deflect, cosmic string</em><br><em style = 'float: right;font-size:88%;'>nail, drone, neutron bomb, iridium</em>`,
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -7573,7 +7587,7 @@ const tech = {
             return `sentry <strong>mines</strong> fire <strong>2x</strong> more ${b.guns[10].nameString('s')}`
         },
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -8174,7 +8188,7 @@ const tech = {
         name: "surface tension",
         description: "<strong>1.4x</strong> <strong>foam</strong> <strong class='color-d'>damage</strong>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -8545,7 +8559,7 @@ const tech = {
             return `forge <strong>${this.removeAmmo()}</strong> <strong class='color-ammo'>ammo</strong> into a new ${b.guns[9].harpoonName()}<br>fire <strong>+1</strong> ${b.guns[9].harpoonName()} with each shot`
         },
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -8786,7 +8800,7 @@ const tech = {
         name: "iridescence",
         description: "if <strong class='color-laser'>laser</strong> beams hit mobs near their <strong>center</strong><br><strong>2x</strong> <strong class='color-laser'>laser</strong> <strong class='color-d'>damage</strong>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -8833,7 +8847,7 @@ const tech = {
         // },
         description: `increase <strong class='color-laser'>laser</strong> lens <strong class='color-d'>damage</strong> by <strong>+0.8x</strong><br>increase lens arc by <strong>+30°</strong>`,
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -8873,7 +8887,7 @@ const tech = {
         name: "diffraction grating",
         description: `<strong>+1</strong> diverging <strong class='color-laser'>laser</strong> beam`,
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -8945,7 +8959,7 @@ const tech = {
         name: "output coupler",
         description: "<strong>1.3x</strong> <strong class='color-laser'>laser</strong> beam <strong>width</strong><br><strong>1.3x</strong> <strong class='color-laser'>laser</strong> <strong class='color-d'>damage</strong>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -8970,7 +8984,7 @@ const tech = {
         name: "delayed-choice",
         description: "your <strong class='color-laser'>laser</strong> fires a <strong>0.4</strong> second <strong>delayed</strong> beam<br>that does <strong>0.7x</strong> <strong class='color-d'>damage</strong>",
         isGunTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -9093,7 +9107,7 @@ const tech = {
         name: "spherical harmonics",
         description: "<strong>standing wave</strong> shield <strong>radius</strong> is stable<br><strong>1.5x</strong> deflection <strong class='color-f'>energy</strong> efficiency", //<strong>standing wave</strong> oscillates in a 3rd dimension<br>
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -9206,7 +9220,7 @@ const tech = {
         },
         // description: "<strong>+1%</strong> <strong class='color-d'>damage</strong> per <strong>8</strong> stored <strong class='color-f'>energy</strong>",
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -9225,7 +9239,7 @@ const tech = {
         name: "bremsstrahlung",
         description: "<strong>deflecting</strong> with your <strong class='color-f'>field</strong><br>does <strong class='color-d'>damage</strong> to mobs",
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -9263,7 +9277,7 @@ const tech = {
         name: "flux pinning",
         description: `mobs <strong>deflected</strong> by your ${powerUps.orb.field()}<br>are <strong>stunned</strong> for <strong>4</strong> seconds`,
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -9537,7 +9551,7 @@ const tech = {
             // return `${fieldName} <strong class='color-print'>prints</strong> a <strong class='color-block'>block</strong><br>to <strong>jump</strong> off while midair`
         },
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -9653,7 +9667,7 @@ const tech = {
         name: "electric generator",
         description: "<strong>molecular assembler</strong> generates<br><strong>+50</strong> <strong class='color-f'>energy</strong> after <strong>deflecting</strong> mobs",
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -9869,7 +9883,7 @@ const tech = {
         name: "refractory metal",
         description: "<strong class='color-plasma'>extrude</strong> metals at a higher <strong class='color-plasma'>temperature</strong><br>increases effective <strong>radius</strong> and <strong class='color-d'>damage</strong>",
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -9913,7 +9927,7 @@ const tech = {
         name: "corona discharge",
         description: "increase the <strong>range</strong> and <strong>frequency</strong><br>of <strong class='color-plasma'>plasma</strong> ball's <strong>electric arc</strong> ",
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -9972,7 +9986,7 @@ const tech = {
         name: "Lorentz transformation",
         description: `<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(3)}</span><strong>1.5x</strong> <strong class="color-speed">movement</strong> and <strong>jump</strong> height<br><strong>1.5x</strong> <em>fire rate</em>`,
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 9,
         frequencyDefault: 3,
@@ -10238,7 +10252,7 @@ const tech = {
         name: "WIMPs",
         description: `a dangerous particle slowly <strong>chases</strong> you<br>spawn ${powerUps.orb.research(7)} at the exit to each <strong>level</strong>`,
         isFieldTech: true,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
@@ -10562,7 +10576,7 @@ const tech = {
     // {
     //     name: "junk",
     //     description: "",
-    //     maxCount: 9,
+    //     maxCount: techLimit || 9, isTechLimit: true,
     //     count: 0,
     //     frequency: 0,
     //     isInstant: true,
@@ -11957,7 +11971,7 @@ const tech = {
     // {
     //     name: "lubrication",
     //     description: "reduce block density and friction for this level",
-    //     maxCount: 9,
+    //     maxCount: techLimit || 9, isTechLimit: true,
     //     count: 0,
     //     frequency: 0,
     //     isInstant: true,
@@ -12199,7 +12213,7 @@ const tech = {
     {
         name: "rewind",
         description: "every 10 seconds <strong>rewind</strong> <strong>2</strong> seconds",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12222,7 +12236,7 @@ const tech = {
     {
         name: "undo",
         description: "every 4 seconds <strong>rewind</strong> <strong>1/2</strong> a second",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12242,7 +12256,7 @@ const tech = {
     {
         name: "energy to mass conversion",
         description: "convert your <strong class='color-f'>energy</strong> into <strong class='color-block'>blocks</strong>",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12266,7 +12280,7 @@ const tech = {
     {
         name: "level.nextLevel()",
         description: "advance to the next level",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12306,7 +12320,7 @@ const tech = {
     {
         name: "expert system",
         description: `spawn ${powerUps.orb.tech()}<br><strong>+50%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12324,7 +12338,7 @@ const tech = {
     {
         name: "energy investment",
         description: "every 10 seconds drain your <strong class='color-f'>energy</strong><br>return it doubled 5 seconds later",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12349,7 +12363,7 @@ const tech = {
     {
         name: "missile launching system",
         description: "fire missiles for the next 120 seconds",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12374,7 +12388,7 @@ const tech = {
     {
         name: "grenade production",
         description: "drop a grenade every 2 seconds",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12786,7 +12800,7 @@ const tech = {
     {
         name: "stun",
         description: "<strong>stun</strong> all mobs for up to <strong>8</strong> seconds",
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
@@ -12848,7 +12862,7 @@ const tech = {
     {
         name: "re-research",
         description: `<strong>eject</strong> all your ${powerUps.orb.research(1)}`,
-        maxCount: 9,
+        maxCount: techLimit || 9, isTechLimit: true,
         count: 0,
         frequency: 0,
         isInstant: true,
